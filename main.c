@@ -25,6 +25,9 @@ bool isAFloat(char c)
     return c == '.';
 }
 
+bool isAComment(char c){
+    return c == '/' || c == '*';
+}
 const char *keywords[] = {"int", "char", "real", "bool" };
 
 TOKEN isValid(const char *c)
@@ -43,6 +46,21 @@ TOKEN isValid(const char *c)
             t.lexema[i] = c[i];
             i++;
         }
+        
+    }
+    else if(isAComment(c[i]) && isAComment(c[i+1])){
+        t.cat = COMMENT;
+        t.lexema[0] = '/';
+        i++;
+        while(isAComment(c[i])){
+            t.lexema[i] = c[i];
+            i++;
+        }
+        while(i < tam){
+            t.lexema[i] = c[i];
+            i++;
+        }
+        
         
     }
 
@@ -82,7 +100,7 @@ TOKEN isValid(const char *c)
         t.cat = INVALID;
     }
 
-    t.lexema[i+1] = '\0';
+    t.lexema[i] = '\0';
 
     return t;
 }
@@ -117,14 +135,16 @@ void printTokenCategory(int category)
     case FLOAT:
         printf("Identificador: FLOAT\n");
         break;
+    case COMMENT:
+        printf("Identificador: COMMENT\n");
+        break;
     default:
         printf("Identificador: Desconhecido\n");
     }
 }
-
 int main()
 {
-    const char *b[] = {"Laranja", "Batata", "_Azul", "12321", "123.32", "@!", "100."};
+    const char *b[] = {"Laranja", "Batata", "_Azul", "12321", "123.32", "@!", "100.", "// testando"};
 
     int numStrings = sizeof(b) / sizeof(b[0]);
 
