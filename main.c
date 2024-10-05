@@ -1,6 +1,6 @@
-#include "structs.h"
+#include "struct/token.h"
+#include "lexFunctions.h"
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 
 bool isALetter(char c)
@@ -28,8 +28,16 @@ bool isAFloat(char c)
 bool isAComment(char c){
     return c == '/' || c == '*';
 }
-const char *keywords[] = {"int", "char", "real", "bool" };
 
+bool isKeyWord(char *c){
+    const char *keywords[] = {"int", "char", "real", "bool" };
+    int size = sizeof(keywords) / sizeof(keywords[0]);
+    for(int i =0;i<size;i++){
+        if(strcmp(c, keywords[i]) == 0) return true;
+    }
+
+    return false;
+}
 TOKEN isValid(const char *c)
 {
     int tam = strlen(c);
@@ -46,7 +54,7 @@ TOKEN isValid(const char *c)
             t.lexema[i] = c[i];
             i++;
         }
-        
+        if(isKeyWord(t.lexema)) t.cat = KEYWORD;
     }
     else if(isAComment(c[i]) && isAComment(c[i+1])){
         t.cat = COMMENT;
@@ -138,13 +146,16 @@ void printTokenCategory(int category)
     case COMMENT:
         printf("Identificador: COMMENT\n");
         break;
+    case KEYWORD:
+        printf("Identificador KEYWORD\n");
+        break;
     default:
         printf("Identificador: Desconhecido\n");
     }
 }
 int main()
 {
-    const char *b[] = {"Laranja", "Batata", "_Azul", "12321", "123.32", "@!", "100.", "// testando"};
+    const char *b[] = {"Laranja", "Batata", "_Azul", "12321", "123.32", "@!", "100.", "// testando", "int", "char"};
 
     int numStrings = sizeof(b) / sizeof(b[0]);
 
