@@ -89,7 +89,8 @@ TOKEN isValid(const char *c)
                 t.cat = FLOAT;
                 t.lexema[i] = c[i];
                 i++;
-            if(isADigit(c[i + 1])){
+            if(isADigit(c[i])){
+            //if(isADigit(c[i + 1])){
                 while (i < tam && isADigit(c[i]))
                 {
                     t.lexema[i] = c[i];
@@ -155,7 +156,7 @@ void printTokenCategory(int category)
 }
 int main()
 {
-    const char *b[] = {"Laranja", "Batata", "_Azul", "12321", "123.32", "@!", "100.", "// testando", "int", "char"};
+    const char *b[] = {"Laranja", "Batata", "_Azul", "12321", "123.32", "333.3", "@!", "100.", "// testando", "int", "char"};
 
     int numStrings = sizeof(b) / sizeof(b[0]);
 
