@@ -5,6 +5,8 @@ typedef struct {
     union{
         int codigo;
         int valor;
+        float valor_r;
+        char c;
         char lexema[31];
     };
 }TOKEN;

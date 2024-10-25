@@ -31,7 +31,7 @@ bool isAComment(char c){
 
 
 bool isKeyWord(char *c){
-    const char *keywords[] = {"int", "char", "real", "bool" };
+    const char *keywords[] = {"int", "char", "real", "bool","while", "if", "else" };
     int size = sizeof(keywords) / sizeof(keywords[0]);
     for(int i =0;i<size;i++){
         if(strcmp(c, keywords[i]) == 0) return true;
@@ -112,9 +112,17 @@ TOKEN analex(const char *c){
     }
         break;
     case 1:
-        t.lexema[i] = c[i];
-        i++;
-        estado = 2;
+        while(isStartIdentifier(c[i])){
+            t.lexema[i] = c[i];
+            i++;
+        }
+        if(i < tam){
+            estado = 2;
+        }
+        else{
+            isValid = false;
+            t.cat = INVALID;
+        }
         break;
     case 2:
         while(i < tam){
@@ -179,7 +187,7 @@ TOKEN analex(const char *c){
 }
 int main()
 {
-    const char *b[] = { "Batata", "_Azul","4321" ,"12.321", "123.32", "@!", "100.", "// testando", "intst", "char"};
+    const char *b[] = { "Batata", "_Azul","4321" ,"12.321", "123.32", "@!", "100.", "// testando", "intst", "char", "___"};
 
     int numStrings = sizeof(b) / sizeof(b[0]);
 
@@ -192,3 +200,12 @@ int main()
 
     return 0;
 }
+
+
+// Palavra reservada utiliza o código do TOKEN
+// Identificadores utilizam o lexema
+// Constantes inteiras ou inteiros utilizam o valor
+// Constantes reais ou reais utilizam FLOAT
+// Para carcter se guarda o char correspondente
+// Se for string/literal
+// SInal também no código
