@@ -38,13 +38,9 @@ TOKEN analex(FILE *f){
             }
             else if(c == '"'){
                 estado = 9;
-                lexema[tamL] = c;
-                lexema[++tamL] = '\0';
             }
             else if(c == '\''){
                 estado = 11;
-                lexema[tamL] = c;
-                lexema[++tamL] = '\0';
 
             }
             else if(c == '>') estado = 17;
@@ -120,11 +116,99 @@ TOKEN analex(FILE *f){
                 lexema[++tamL] = '\0';
             }
             else{
-                estado = 3;
-                ungetc(c, f);
+            ungetc(c,f);
+            estado = 3;
+            if(strcmp(lexema, "while") == 0){
+                tk.cat = PV_R;
+                tk.codigo = WHILE;
+            }
+            else if(strcmp(lexema, "const") == 0){
+                tk.cat = PV_R;
+                tk.codigo = CONST;
+            }
+            else if(strcmp(lexema, "pr") == 0){
+                tk.cat = PV_R;
+                tk.codigo = PR;
+            }
+            else if(strcmp(lexema, "init") == 0){
+                tk.cat = PV_R;
+                tk.codigo = INIT;
+            }
+            else if(strcmp(lexema , "endp") == 0){
+                tk.cat = PV_R;
+                tk.codigo = ENDP;
+            }
+            else if(strcmp(lexema, "char") == 0){
+                tk.cat = PV_R;
+                tk.codigo = CHAR;
+            }
+            else if(strcmp(lexema, "int") == 0){
+                tk.cat = PV_R;
+                tk.codigo = INT;
+            }
+            else if(strcmp(lexema, "real") == 0){
+                tk.cat = PV_R;
+                tk.codigo = REAL;
+            }
+            else if(strcmp(lexema, "bool") == 0){
+                tk.cat = PV_R;
+                tk.codigo = BOOL;
+            }
+            else if(strcmp(lexema, "do") == 0){
+                tk.cat = PV_R;
+                tk.codigo = DO;
+            }
+            else if(strcmp(lexema, "endw") == 0){
+                tk.cat = PV_R;
+                tk.codigo = ENDW;
+            }
+            else if(strcmp(lexema, "if") == 0){
+                tk.cat = PV_R;
+                tk.codigo = IF;
+            }
+            else if(strcmp(lexema, "elif") == 0){
+                  tk.cat = PV_R;
+                tk.codigo = ELIF;
+            }
+            else if(strcmp(lexema, "else") == 0){
+                tk.cat = PV_R;
+                tk.codigo = ELSE;
+            }
+            else if(strcmp(lexema, "endi") == 0){
+                  tk.cat = PV_R;
+                tk.codigo = ENDI;
+            }
+            else if(strcmp(lexema, "getint") == 0){
+                  tk.cat = PV_R;
+                tk.codigo = GETINT;
+            }
+            else if(strcmp(lexema, "getchar") == 0){
+                  tk.cat = PV_R;
+                tk.codigo = GETCHAR;
+            }
+            else if(strcmp(lexema, "getreal") == 0){
+                  tk.cat = PV_R;
+                tk.codigo = GETREAL;
+            }
+            else if(strcmp(lexema, "putint") == 0){
+                  tk.cat = PV_R;
+                tk.codigo = PUTINT;
+            }
+            else if(strcmp(lexema, "putchar") == 0){
+                  tk.cat = PV_R;
+                tk.codigo = PUTCHAR;
+            }
+            else if(strcmp(lexema, "putreal") == 0){
+                tk.cat = PV_R;
+                tk.codigo = PUTREAL;
+            }
+            else{
+             
                 tk.cat = ID;
                 strcpy(tk.lexema, lexema);
-                return tk;
+             
+            }
+            return tk;
             }
             break;
         case 4:
@@ -173,8 +257,6 @@ TOKEN analex(FILE *f){
             }
             else{
                 estado = 10;
-                lexema[tamL] = c;
-                lexema[++tamL] = '\0';
                 tk.cat = LT;
                 strcpy(tk.lexema, lexema);
                 return tk;
@@ -182,7 +264,7 @@ TOKEN analex(FILE *f){
             }
         break;
         case 11:
-            if(c == 92){
+            if(c == '\\'){
                 lexema[tamL] = c;
                 lexema[++tamL] = '\0';
                 estado = 12;
@@ -207,22 +289,16 @@ TOKEN analex(FILE *f){
         break;
         case 13:
             if(c == '\''){
-                lexema[tamL] = c;
-                lexema[++tamL] = '\0';
                 estado = 16;
             }
         break;
         case 14:
             if(c == '\''){
-                lexema[tamL] = c;
-                lexema[++tamL] = '\0';
                 estado = 16;
             }
         break;
         case 15:
             if(c == '\''){
-                lexema[tamL] = c;
-                lexema[++tamL] = '\0';
                 estado = 16;
             }
         break;
@@ -245,6 +321,74 @@ TOKEN analex(FILE *f){
                 return tk;
             }
             break;
+        case 20:
+             if(c == '='){
+                estado = 22;
+                tk.cat = SN;
+                tk.codigo = MENORIGUAl;
+                return tk;
+            }
+            else{
+                ungetc(c,f);
+                estado = 21;
+                tk.cat = SN;
+                tk.codigo = MENORQUE;
+                return tk;
+            }
+            break;
+            case 23:
+            if(c == '='){
+                estado = 25;
+                tk.cat = SN;
+                tk.codigo = DIFERENTE;
+                return tk;
+            }
+            else{
+                ungetc(c,f);
+                estado = 24;
+                tk.cat = SN;
+                tk.codigo = NEGACAO;
+                return tk;
+            }
+            break;
+            case 26:
+                if(c == '='){
+                    estado = 28;
+                    tk.cat = SN;
+                    tk.codigo = IGUALDADE;
+                    return tk;
+                }
+                else{
+                    ungetc(c,f);
+                    estado = 27;
+                    tk.cat = SN;
+                    tk.codigo = ATRIBUICAO;
+                    return tk;
+                }
+                break;
+                case 29:
+                    if(c == '|'){
+                        estado = 30;
+                        tk.cat = SN;
+                        tk.codigo = OR;
+                        return tk;
+                    }
+                break;
+                case 36:
+                    if(c == '&'){
+                         estado = 30;
+                        tk.cat = SN;
+                        tk.codigo = AND;
+                        return tk;
+                    }
+                    else{
+                        ungetc(c,f);
+                        tk.cat = SN;
+                        tk.codigo = ENDERECO;
+                        return tk;
+                    }
+                    break;
+
         }
      }
 }
@@ -349,14 +493,14 @@ int main()
                 break;
             }
         break;
-        case PR:
+        case PV_R:
             switch (token.codigo)
             {
             case CONST:
                 printf("<PR, CONST>\n");
                 break;
 
-            case PVR:
+            case PR:
                 printf("<PR, PR>\n");
                 break;
 
@@ -457,6 +601,9 @@ int main()
                 break;
             }
             break;
+        case ID:
+            printf("<ID, %s>\n", token.lexema);
+            break;
         case CT_I:
             printf("<CT_I, %d>\n", token.valor);
             break;
@@ -464,10 +611,10 @@ int main()
             printf("<CT_R, %f>\n", token.valor_r);
             break;
         case CT_C:
-            printf("<CT_C, %c\n", token.c);
+            printf("<CT_C, %c> \n", token.c);
             break;
         case LT:
-            printf("<LT, %s", token.lexema);
+            printf("<LT, %s> \n", token.lexema);
             break;
         case FIM_ARQ:
             printf("<FIM_ARQ, EOF>");

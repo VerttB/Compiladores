@@ -1,1 +1,12 @@
-125>=2 + 5 "ab"
+init
+    int a = 10
+    int b = 34
+    int c = a + b
+    char dado = "eai"
+    real teste = 3.5
+
+    while c >= a
+        if b + a + 1 > c
+        getint 2
+        endi
+    endw
