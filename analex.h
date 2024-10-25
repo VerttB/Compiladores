@@ -1,5 +1,5 @@
 typedef enum {
-    ID, CT_I, CT_R,CT_C, LT, FIM_ARQ, SN, PV_R
+    ID, CT_I, CT_R,CT_C, LT, FIM_ARQ, SN, PV_R, COMENTARIO
 }CATEGORIA;
 
 typedef enum {

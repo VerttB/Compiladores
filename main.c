@@ -5,6 +5,11 @@
 #include "analex.h"
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
+
+void error(char err[]){
+    printf("%s %d", err, linha);
+    exit(1);
+}
 TOKEN analex(FILE *f){
      int estado = 0; 
      int tamL = 0; 
@@ -41,7 +46,6 @@ TOKEN analex(FILE *f){
             }
             else if(c == '\''){
                 estado = 11;
-
             }
             else if(c == '>') estado = 17;
             else if(c == '<') estado = 20;
@@ -93,8 +97,16 @@ TOKEN analex(FILE *f){
                 return tk;
             }
             else if(c == '/') estado = 42;
-
-            
+            else if(c == EOF){
+                tk.cat = FIM_ARQ;
+                return tk;
+            }
+            else if(c == '\n'){
+                linha++;
+            }
+            else{
+                 error("CARACTER INVALIDO ENCONTRADO");
+            }
             break;
         case 1:
             if(c == '_'){
@@ -202,6 +214,26 @@ TOKEN analex(FILE *f){
                 tk.cat = PV_R;
                 tk.codigo = PUTREAL;
             }
+            else if(strcmp(lexema, "var") == 0){
+                tk.cat = PV_R;
+                tk.codigo = VAR;
+            }
+            else if(strcmp(lexema, "from") == 0){
+                tk.cat = PV_R;
+                tk.codigo = FROM;
+            }
+            else if(strcmp(lexema, "to") == 0){
+                tk.cat = PV_R;
+                tk.codigo = TO;
+            }
+            else if(strcmp(lexema, "by") == 0){
+                tk.cat = PV_R;
+                tk.codigo = BY;
+            }
+            else if(strcmp(lexema, "endv") == 0){
+                tk.cat = PV_R;
+                tk.codigo = ENDV;
+            }
             else{
              
                 tk.cat = ID;
@@ -291,6 +323,9 @@ TOKEN analex(FILE *f){
             if(c == '\''){
                 estado = 16;
             }
+            else{
+                error("ERRO NO CHAR NA LINHA");
+            }
         break;
         case 14:
             if(c == '\''){
@@ -304,6 +339,7 @@ TOKEN analex(FILE *f){
         break;
         case 16:
             tk.cat = CT_C;
+            tk.c = lexema[--tamL];
             return tk;
             break;  
         case 17:
@@ -388,7 +424,30 @@ TOKEN analex(FILE *f){
                         return tk;
                     }
                     break;
-
+                    case 42:
+                    if(c == '/'){
+                        tk.cat = COMENTARIO;
+                        estado = 44;
+                    }
+                    else{
+                        ungetc(c, f);
+                        estado = 43;
+                        tk.cat = SN;
+                        tk.codigo = DIV;
+                        return tk;
+                    }
+                    break;
+                    case 44:
+                        if(c != '\n'){
+                           lexema[tamL] = 'c';
+                           tamL++; 
+                           
+                        }
+                        else{
+                            estado = 0;
+                            return tk;
+                        }
+                    break;
         }
      }
 }
@@ -615,6 +674,9 @@ int main()
             break;
         case LT:
             printf("<LT, %s> \n", token.lexema);
+            break;
+        case COMENTARIO:
+            printf("<CMT, COMENTARIO>\n");
             break;
         case FIM_ARQ:
             printf("<FIM_ARQ, EOF>");
