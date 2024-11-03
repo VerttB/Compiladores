@@ -25,11 +25,4 @@ typedef struct {
 }TOKEN;
 
 int linha = 1;
-
-bool isDigit(char);
-bool isALetter(char);
-bool isKeyWord(char *);
-bool isIdentifier(char);
-bool isAComment(char);
-bool isAFloat(char);
 TOKEN analex(FILE *f);
