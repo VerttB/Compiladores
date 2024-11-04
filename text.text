@@ -1,6 +1,6 @@
 init
     //Esse código n faz nada
-    "a" ||
+    'a' //Erro
     real palavra = 2.5
     int a = 10
     int b = 34
@@ -17,4 +17,5 @@ init
     endw
 
     var loop from array to &outroArray by numero endv
+    char a //testando 
 

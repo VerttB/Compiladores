@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "analex.h"
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
@@ -381,11 +382,14 @@ TOKEN	analex(FILE *f)
 				lexema[++tamL] = '\0';
 				estado = 12;
 			}
-			else
+			else if(isprint(c))
 			{
 				lexema[tamL] = c;
 				lexema[++tamL] = '\0';
 				estado = 13;
+			}
+			else{
+				error("Erro char");
 			}
 			break ;
 		case 12:
@@ -537,7 +541,6 @@ TOKEN	analex(FILE *f)
 		case 42:
 			if (c == '/')
 			{
-				tk.cat = COMENTARIO;
 				estado = 44;
 			}
 			else
