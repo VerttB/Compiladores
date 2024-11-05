@@ -384,8 +384,7 @@ TOKEN	analex(FILE *f)
 			}
 			else if(isprint(c))
 			{
-				lexema[tamL] = c;
-				lexema[++tamL] = '\0';
+				tk.c = c;
 				estado = 13;
 			}
 			else{
@@ -395,14 +394,12 @@ TOKEN	analex(FILE *f)
 		case 12:
 			if (c == '0')
 			{
-				lexema[tamL] = c;
-				lexema[++tamL] = '\0';
+				tk.c = '\0';
 				estado = 15;
 			}
 			else if (c == 'n')
 			{
-				lexema[tamL] = c;
-				lexema[++tamL] = '\0';
+				tk.c = '\n';
 				estado = 14;
 			}
 			break ;
@@ -419,7 +416,7 @@ TOKEN	analex(FILE *f)
 		case 14:
 			if (c == '\'')
 			{
-				estado = 16;
+				estado = 46;
 			}
 			else
 			{
@@ -430,7 +427,7 @@ TOKEN	analex(FILE *f)
 		case 15:
 			if (c == '\'')
 			{
-				estado = 16;
+				estado = 45;
 			}
 			else
 			{
@@ -439,7 +436,6 @@ TOKEN	analex(FILE *f)
 			break ;
 		case 16:
 			tk.cat = CT_C;
-			tk.c = lexema[--tamL];
 			return (tk);
 			break ;
 		case 17:
@@ -555,10 +551,18 @@ TOKEN	analex(FILE *f)
 		case 44:
 			if (c == '\n')
 			{
+				linha++;
 				estado = 0;
 			}
-			
 			break ;
+		case 45:
+			tk.cat = CT_C;
+			return tk;
+		break;
+		case 46:
+			tk.cat = CT_C;
+			return tk;
+		break;
 		}
 	}
 }
@@ -783,9 +787,6 @@ int	main(void)
 			break ;
 		case LT:
 			printf("<LT, %s> \n", token.lexema);
-			break ;
-		case COMENTARIO:
-			printf("<CMT, COMENTARIO>\n");
 			break ;
 		case FIM_ARQ:
 			printf("<FIM_ARQ, EOF>");
