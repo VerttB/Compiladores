@@ -31,7 +31,13 @@ init
     =
     &
     &&
-    |
     var loop from array to &outroArray by numero endv
     char a //testando 
-
+    ""
+    int
+    INT
+    at
+    AT
+    DT
+    Dt
+    dt

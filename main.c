@@ -293,6 +293,10 @@ TOKEN	analex(FILE *f)
 					tk.cat = PV_R;
 					tk.codigo = ENDV;
 				}
+				else if(strcmp(lexema, "dt") == 0){
+					tk.cat = PV_R;
+					tk.codigo = DT;
+				}
 				else
 				{
 					tk.cat = ID;
@@ -621,7 +625,6 @@ int	main(void)
 			case PARENTESEABERTO:
 				printf("<SN, PARENTESEABERTO>\n");
 				break ;
-
 			case PARENTESEFECHADO:
 				printf("<SN, PARENTESEFECHADO>\n");
 				break ;
@@ -768,6 +771,9 @@ int	main(void)
 
 			case PUTREAL:
 				printf("<PR, PUTREAL>\n");
+				break ;
+			case DT:
+				printf("<PR, DT>\n");
 				break ;
 			}
 			break ;
