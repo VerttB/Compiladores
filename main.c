@@ -378,8 +378,6 @@ TOKEN	analex(FILE *f)
 		case 11:
 			if (c == '\\')
 			{
-				lexema[tamL] = c;
-				lexema[++tamL] = '\0';
 				estado = 12;
 			}
 			else if(isprint(c))
@@ -521,7 +519,7 @@ TOKEN	analex(FILE *f)
 		case 36:
 			if (c == '&')
 			{
-				estado = 30;
+				estado = 38;
 				tk.cat = SN;
 				tk.codigo = AND;
 				return (tk);
