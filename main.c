@@ -68,8 +68,12 @@ TOKEN	analex(FILE *f)
 				estado = 26;
 			else if (c == '|')
 				estado = 29;
-			else if (c == ',')
+			else if (c == ','){
 				estado = 31;
+				tk.cat = SN;
+				tk.codigo = VIRGULA;
+				return tk;
+			}
 			else if (c == '(')
 			{
 				estado = 32;
@@ -657,12 +661,8 @@ int	main(void)
 				printf("<SN, DIFERENTE>\n");
 				break ;
 
-			case VIR:
-				printf("<SN, VIR>\n");
-				break ;
-
-			case PONTO:
-				printf("<SN, PONTO>\n");
+			case VIRGULA:
+				printf("<SN, VIRGULA>\n");
 				break ;
 			}
 			break ;
