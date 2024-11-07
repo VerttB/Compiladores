@@ -12,6 +12,12 @@ typedef enum{
     CONST, PR, INIT, ENDP, CHAR, INT, REAL, BOOL, DO, WHILE,ENDW, VAR, FROM, TO,BY,ENDV,IF,ELIF,ELSE,ENDI,GETINT,GETCHAR,GETREAL,PUTINT,PUTCHAR,PUTREAL,DT
 }PVR;
 
+char keywords[28][20] = {
+  "const", "pr", "init", "endp", "char", "int", "real", "bool", 
+  "do", "while", "endw", "var", "from", "to", "by", "endv", 
+  "if", "elif", "else", "endi", "getint", "getchar", "getreal", 
+  "putint", "putchar", "putreal", "dt"
+};
 
 typedef struct {
     CATEGORIA cat;
