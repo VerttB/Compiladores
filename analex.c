@@ -6,9 +6,7 @@
 #include "analex.h"
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
-
-void error(char err[])
-{
+void error(char err[]){
 	printf("%s na linha %d", err, linha);
 	exit(1);
 }
@@ -157,6 +155,9 @@ TOKEN analex(FILE *f)
 				estado = 2;
 				lexema[tamL] = c;
 				lexema[++tamL] = '\0';
+				if(tamL > TAM_LEXEMA){
+					error("Tamanho de literal inválido");
+				}
 			}
 			else
 			{
@@ -640,6 +641,9 @@ int	main(void)
 			case DT:
 				printf("<PR, DT>\n");
 				break ;
+			case GETOUT:
+				printf("<PR, GETOUT>\n");
+				break;
 			}
 			break ;
 		case ID:
