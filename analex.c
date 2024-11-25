@@ -6,24 +6,17 @@
 #include "analex.h"
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
-
-void	error(char err[])
-{
+void error(char err[]){
 	printf("%s na linha %d", err, linha);
 	exit(1);
 }
-TOKEN	analex(FILE *f)
+TOKEN analex(FILE *f)
 {
-	int		estado;
-	int		tamL;
-	int		tamD;
-	char    lexema[TAM_LEXEMA] = "";
-	char	digitos[TAM_NUM] = "";
-	TOKEN	tk;
-	char	c;
-	estado = 0;
-	tamL = 0;
-	tamD = 0;
+	int	estado = 0, tamL = 0, tamD = 0;
+	char lexema[TAM_LEXEMA] = "";
+	char digitos[TAM_NUM] = "";
+	TOKEN tk;
+	char c;
 	while (true)
 	{
 		c = fgetc(f);
@@ -79,28 +72,28 @@ TOKEN	analex(FILE *f)
 				estado = 32;
 				tk.cat = SN;
 				tk.codigo = PARENTESEABERTO;
-				return (tk);
+				return tk;
 			}
 			else if (c == ')')
 			{
 				estado = 33;
 				tk.cat = SN;
 				tk.codigo = PARENTESEFECHADO;
-				return (tk);
+				return tk;
 			}
 			else if (c == '[')
 			{
 				estado = 34;
 				tk.cat = SN;
 				tk.codigo = COLCHETEABERTO;
-				return (tk);
+				return tk;
 			}
 			else if (c == ']')
 			{
 				estado = 35;
 				tk.cat = SN;
 				tk.codigo = COLCHETEFECHADO;
-				return (tk);
+				return tk;
 			}
 			else if (c == '&')
 				estado = 36;
@@ -109,7 +102,7 @@ TOKEN	analex(FILE *f)
 				estado = 39;
 				tk.cat = SN;
 				tk.codigo = ADICAO;
-				return (tk);
+				return tk;
 			}
 			else if (c == '-')
 			{
@@ -162,156 +155,31 @@ TOKEN	analex(FILE *f)
 				estado = 2;
 				lexema[tamL] = c;
 				lexema[++tamL] = '\0';
+				if(tamL > TAM_LEXEMA){
+					error("Tamanho de literal inválido");
+				}
 			}
 			else
 			{
 				ungetc(c, f);
 				estado = 3;
-				if (strcmp(lexema, "while") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = WHILE;
+				int t = sizeof(keywords) / sizeof(keywords[0]);
+
+				for(int i = 0 ;i < t;i++){
+					if(strcmp(lexema, keywords[i]) == 0){
+						tk.cat = PV_R;
+						tk.codigo = i;
+						return tk;
+						break;
+					}
 				}
-				else if (strcmp(lexema, "const") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = CONST;
-				}
-				else if (strcmp(lexema, "pr") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = PR;
-				}
-				else if (strcmp(lexema, "init") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = INIT;
-				}
-				else if (strcmp(lexema, "endp") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = ENDP;
-				}
-				else if (strcmp(lexema, "char") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = CHAR;
-				}
-				else if (strcmp(lexema, "int") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = INT;
-				}
-				else if (strcmp(lexema, "real") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = REAL;
-				}
-				else if (strcmp(lexema, "bool") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = BOOL;
-				}
-				else if (strcmp(lexema, "do") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = DO;
-				}
-				else if (strcmp(lexema, "endw") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = ENDW;
-				}
-				else if (strcmp(lexema, "if") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = IF;
-				}
-				else if (strcmp(lexema, "elif") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = ELIF;
-				}
-				else if (strcmp(lexema, "else") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = ELSE;
-				}
-				else if (strcmp(lexema, "endi") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = ENDI;
-				}
-				else if (strcmp(lexema, "getint") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = GETINT;
-				}
-				else if (strcmp(lexema, "getchar") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = GETCHAR;
-				}
-				else if (strcmp(lexema, "getreal") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = GETREAL;
-				}
-				else if (strcmp(lexema, "putint") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = PUTINT;
-				}
-				else if (strcmp(lexema, "putchar") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = PUTCHAR;
-				}
-				else if (strcmp(lexema, "putreal") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = PUTREAL;
-				}
-				else if (strcmp(lexema, "var") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = VAR;
-				}
-				else if (strcmp(lexema, "from") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = FROM;
-				}
-				else if (strcmp(lexema, "to") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = TO;
-				}
-				else if (strcmp(lexema, "by") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = BY;
-				}
-				else if (strcmp(lexema, "endv") == 0)
-				{
-					tk.cat = PV_R;
-					tk.codigo = ENDV;
-				}
-				else if(strcmp(lexema, "dt") == 0){
-					tk.cat = PV_R;
-					tk.codigo = DT;
-				}
-				else
-				{
-					tk.cat = ID;
-					strcpy(tk.lexema, lexema);
-				}
+				tk.cat = ID;
+				strcpy(tk.lexema, lexema);
 				return (tk);
 			}
 			break ;
 		case 4:
-			if (c >= '0' && c <= '9')
-			{
+			if (c >= '0' && c <= '9'){
 				estado = 4;
 				digitos[tamD] = c;
 				digitos[++tamD] = '\0';
@@ -319,14 +187,12 @@ TOKEN	analex(FILE *f)
 					error("Tamanho máximo de inteiro alcançado");
 				}
 			}
-			else if (c == '.')
-			{
+			else if (c == '.'){
 				estado = 6;
 				digitos[tamD] = c;
 				digitos[++tamD] = '\0';
 			}
-			else
-			{
+			else{
 				estado = 5;
 				ungetc(c, f);
 				tk.cat = CT_I;
@@ -775,6 +641,9 @@ int	main(void)
 			case DT:
 				printf("<PR, DT>\n");
 				break ;
+			case GETOUT:
+				printf("<PR, GETOUT>\n");
+				break;
 			}
 			break ;
 		case ID:

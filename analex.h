@@ -1,5 +1,5 @@
 typedef enum {
-    ID, CT_I, CT_R,CT_C, LT, FIM_ARQ, SN, PV_R, COMENTARIO
+    ID, CT_I, CT_R,CT_C, LT, FIM_ARQ, SN, PV_R
 }CATEGORIA;
 
 typedef enum {
@@ -9,9 +9,15 @@ typedef enum {
 } SINAL;
 
 typedef enum{
-    CONST, PR, INIT, ENDP, CHAR, INT, REAL, BOOL, DO, WHILE,ENDW, VAR, FROM, TO,BY,ENDV,IF,ELIF,ELSE,ENDI,GETINT,GETCHAR,GETREAL,PUTINT,PUTCHAR,PUTREAL,DT
+    CONST, PR, INIT, ENDP, CHAR, INT, REAL, BOOL, DO, WHILE,ENDW, VAR, FROM, TO,BY,ENDV,IF,ELIF,ELSE,ENDI,GETINT,GETCHAR,GETREAL,PUTINT,PUTCHAR,PUTREAL,DT, GETOUT
 }PVR;
 
+char keywords[28][20] = {
+  "const", "pr", "init", "endp", "char", "int", "real", "bool", 
+  "do", "while", "endw", "var", "from", "to", "by", "endv", 
+  "if", "elif", "else", "endi", "getint", "getchar", "getreal", 
+  "putint", "putchar", "putreal", "dt", "getout"
+};
 
 typedef struct {
     CATEGORIA cat;
@@ -24,5 +30,5 @@ typedef struct {
     };
 }TOKEN;
 
-int linha = 1;
+int linha = 1;              
 TOKEN analex(FILE *f);
