@@ -17,7 +17,7 @@ char keywords[32][20] = {
 
 
 void error(char err[]){
-	printf("%s na linha %d", err, linha);
+	printf("%s na linha %d", err, linha-1);
 	exit(1);
 }
 TOKEN analex(FILE *f)
@@ -139,6 +139,7 @@ TOKEN analex(FILE *f)
 			}
 			else if (c == '\n')
 			{
+				estado = 0;
 				tk.cat = FIM_EXPR;
 				linha++;
 				return tk;
@@ -435,18 +436,22 @@ TOKEN analex(FILE *f)
 			}
 			break ;
 		case 44:
-			if (c == '\n')
+			if (c == 'n')
 			{
-				linha++;
-				estado = 0;
+				estado = 45;
+			}
+			else if(c == '0'){
+				estado = 46;
 			}
 			break ;
 		case 45:
 			tk.cat = CT_C;
+			tk.c = 10;
 			return tk;
 		break;
 		case 46:
 			tk.cat = CT_C;
+			tk.c = 0;
 			return tk;
 		break;
 		}
@@ -686,12 +691,15 @@ void testeAnalex()
 		case LT:
 			printf("<LT, %s> \n", tk.lexema);
 			break ;
+		case FIM_EXPR:
+			printf("<FIM_EXP>\n");
+			break;
 		case FIM_ARQ:
 			printf("<FIM_ARQ, EOF>\n");
 			break ;
 		}
 		if (tk.cat == FIM_ARQ)
-			break ;
+			break;
 		tk.processado = true;
 	}
 	fclose(f);

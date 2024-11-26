@@ -14,8 +14,12 @@ void Termo();
 void Resto();
 void Sobra();
 void Fator();
-void opLogic();
+void opRel();
 
 void testeSint();
 
+
+void declVar();
+void varInit(); //Trata das inicializações intcon |realcon | charcon | stringcon
+void arrayInit(); //Trata das inicializações de array = {}
 #endif

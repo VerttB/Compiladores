@@ -94,23 +94,80 @@ void Fator() {
 	}
 }
 
-void dec_list_var(){
+void declVar(){
+	if(tk.cat != ID){
+		error("Identificador esperado\n");
+	}
+		tk.processado = true;
+		tk = analex(f);
 
+		if(tk.cat == SN && tk.codigo == ATRIBUICAO){
+			tk.processado = true;
+			tk = analex(f);
+			varInit();
+		}
+		else if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
+			while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
+				tk.processado = true;
+				tk = analex(f);
+				if(!(tk.cat != CT_I || tk.cat != ID)){
+					error("Esperado constante inteira ou identificador \n");
+				}
+				tk.processado = true;
+				tk = analex(f);
+				if(tk.cat != SN || tk.codigo != COLCHETEFECHADO){
+					error("Fechamento de colchetes esperado\n");
+				}
+				else{
+					tk.processado = true;
+					tk = analex(f);
+				}
+				 arrayInit();
+				}
+		}
+	
+	}
+
+void varInit(){
+	if(tk.cat == CT_C || tk.cat == CT_I || tk.cat == CT_R || tk.cat == LT){
+			tk.processado = true;
+			tk = analex(f);
+	}
+		else{
+			error("Inicialização de variável inválida");
+		}
+}
+
+void arrayInit(){
+	if(tk.cat == SN && tk.codigo == ATRIBUICAO){
+		tk.processado = true;
+		tk = analex(f);
+		varInit();
+		if(tk.cat == SN && tk.codigo == VIRGULA){
+			tk.processado = true;
+			while(tk.cat == SN && tk.codigo == VIRGULA){
+				tk = analex(f);
+				varInit();
+				}
+			}
+		}
 }
 
 void testeSint() {
     
-    if ((f=fopen("text.text", "r\n")) == NULL)
+    if ((f=fopen("text.text", "r")) == NULL)
         error("Arquivo de entrada da expressão nao encontrado!\n");
 
     tk.processado = true;
+
     while (true) {
         tk = analex(f);
         if (tk.cat == FIM_ARQ) {
             printf("\nFim do arquivo fonte encontrado!\n\n");
             break;
         }
-        Atrib();
+        //Atrib();
+		declVar();
         if (tk.cat = FIM_EXPR)
             printf("\nLINHA %d: Expressão sintaticamente correta!\n\n", linha - 1);
         else {

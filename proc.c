@@ -11,6 +11,6 @@ TOKEN tk;
 
 int main(){
     // testeAnalex();
-    linha = 0;
+    linha = 1;
     testeSint();
 }
