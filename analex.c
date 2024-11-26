@@ -7,11 +7,12 @@
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
 
-char keywords[28][20] = {
+char keywords[32][20] = {
   "const", "pr", "init", "endp", "char", "int", "real", "bool", 
   "do", "while", "endw", "var", "from", "to", "by", "endv", 
   "if", "elif", "else", "endi", "getint", "getchar", "getreal", 
-  "putint", "putchar", "putreal", "dt", "getout"
+  "putint", "putchar", "putreal", "dt", "getout", "putstr", "getstr",
+  "prot", "def"
 };
 
 
@@ -328,7 +329,7 @@ TOKEN analex(FILE *f)
 			{
 				estado = 19;
 				tk.cat = SN;
-				tk.codigo = MAIORIGUAl;
+				tk.codigo = MAIORIGUAL;
 				return (tk);
 			}
 			else
@@ -345,7 +346,7 @@ TOKEN analex(FILE *f)
 			{
 				estado = 22;
 				tk.cat = SN;
-				tk.codigo = MENORIGUAl;
+				tk.codigo = MENORIGUAL;
 				return (tk);
 			}
 			else
@@ -484,7 +485,7 @@ void testeAnalex()
 				printf("<SN, MAIORQUE>\n");
 				break ;
 
-			case MAIORIGUAl:
+			case MAIORIGUAL:
 				printf("<SN, MAIORIGUAL>\n");
 				break ;
 
@@ -492,7 +493,7 @@ void testeAnalex()
 				printf("<SN, MENORQUE>\n");
 				break ;
 
-			case MENORIGUAl:
+			case MENORIGUAL:
 				printf("<SN, MENORIGUAL>\n");
 				break ;
 
@@ -655,6 +656,18 @@ void testeAnalex()
 				break ;
 			case GETOUT:
 				printf("<PR, GETOUT>\n");
+				break;
+			case PUTSTR:
+				printf("<PR, PUTSTR>\n");
+				break;
+			case GETSTR:
+				printf("<PR, GETSTR>\n");
+				break;
+			case PROT:
+				printf("<PR>, PROT>\n");
+				break;
+			case DEF:
+				printf("<PR, DEF>\n");
 				break;
 			}
 			break ;

@@ -9,10 +9,12 @@ extern int linha;
 
 void Atrib();
 void Expr();
+void exprSimples();
 void Termo();
 void Resto();
 void Sobra();
 void Fator();
+void opLogic();
 
 void testeSint();
 

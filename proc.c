@@ -10,6 +10,7 @@ FILE *f;
 TOKEN tk;
 
 int main(){
-    testeAnalex();
+    // testeAnalex();
+    linha = 0;
     testeSint();
 }
