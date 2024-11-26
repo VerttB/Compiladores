@@ -19,7 +19,14 @@ void opRel();
 void testeSint();
 
 
+//
+
+
+void cmd();
+//Lidam com inicialização de variaveis
 void declVar();
+void declListVar();
+void tipo();
 void varInit(); //Trata das inicializações intcon |realcon | charcon | stringcon
 void arrayInit(); //Trata das inicializações de array = {}
 #endif

@@ -1,5 +1,6 @@
 #include "analex.h"
 #include "anasint.h"
+#include "auxfuncs.h"
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -17,6 +18,7 @@ void opRel(){
 }
 
 void Atrib() {
+	consomeEnter();
 	if (tk.cat != ID) {
 		error("Identificador esperado!\n");
 	}
@@ -38,8 +40,10 @@ void Expr() {
 						tk.codigo == MENORQUE || tk.codigo == MENORIGUAL ||
 						tk.codigo == NEGACAO  || tk.codigo == DIFERENTE  ||
 						tk.codigo == IGUALDADE)){
+
 		opRel();
 		exprSimples();
+
 	}
 }
 
@@ -144,8 +148,8 @@ void arrayInit(){
 		tk = analex(f);
 		varInit();
 		if(tk.cat == SN && tk.codigo == VIRGULA){
-			tk.processado = true;
 			while(tk.cat == SN && tk.codigo == VIRGULA){
+			tk.processado = true;
 				tk = analex(f);
 				varInit();
 				}
@@ -153,6 +157,130 @@ void arrayInit(){
 		}
 }
 
+void declListVar(){
+	if(tk.cat == PV_R && tk.codigo == CONST){
+		tk.processado = true;
+		tk = analex(f);
+	}
+	tipo();
+	declVar();
+		while(tk.cat == SN && tk.codigo == VIRGULA){
+			tk.processado = true;
+			tk = analex(f);
+			declVar();
+		}
+	
+}
+void tipo(){
+	if(tk.codigo == INT || tk.codigo == REAL || tk.codigo == BOOL || tk.codigo == CHAR){
+		tk.processado = true;
+		tk = analex(f);
+	}
+	else{
+		error("Esperado declaração de tipo de variável\n");
+	}
+}
+//---------------------------------
+void cmd(){
+	consomeEnter();
+	if(tk.cat != PV_R && tk.cat != ID) error("Identificador ou palavra chave esperado");
+	if(tk.codigo == DO){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID) error("Esperado ID do procedimento\n");
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat == ID){
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat == SN && tk.codigo == VIRGULA){
+				while(tk.cat == SN && tk.codigo == VIRGULA){
+					tk.processado = true;
+					tk = analex(f);
+					if(!tk.cat == ID) error("Identificador Válido Esperado");
+					tk.processado = true;
+					tk = analex(f);
+				}
+			}
+		}
+		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
+	}
+	else if(tk.codigo == WHILE){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
+		tk.processado = true;
+		Expr();
+		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
+		while(tk.codigo != ENDW){
+			  if (tk.cat == FIM_ARQ) {
+                error("Fim do arquivo inesperado dentro do loop WHILE");
+            }
+			tk.processado = true;
+			tk = analex(f);
+			cmd();
+		}
+		if(tk.codigo != ENDW) error("ENDW esperado\n");
+		tk.processado = true;
+		tk = analex(f);
+	}
+	else if(tk.cat == ID) Atrib();
+	else if(tk.codigo == GETOUT){
+		tk.processado = true;
+	}
+	else if(tk.codigo == GETINT){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID) error("ID esperado para funcionamento da função");
+		tk.processado = true;
+	}
+	else if(tk.codigo == GETREAL){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID) error("ID esperado para funcionamento da função");
+		tk.processado = true;
+	}
+	else if(tk.codigo == GETCHAR){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID) error("ID esperado para funcionamento da função");
+		tk.processado = true;
+	}
+	else if(tk.codigo == GETSTR){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID) error("ID esperado para funcionamento da função");
+		tk.processado = true;
+	}
+	else if(tk.codigo == PUTINT){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID && tk.cat != CT_I) error("ID ou constante inteira esperado para funcionamento da função");
+		tk.processado = true;
+	}
+	else if(tk.codigo == PUTREAL){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID && tk.cat != CT_R) error("ID ou constante real esperado para funcionamento da função");
+		tk.processado = true;
+	}
+	else if(tk.codigo == PUTCHAR){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID && tk.cat != CT_C) error("ID ou constante char esperado para funcionamento da função");
+		tk.processado = true;
+	}
+	else if(tk.codigo == PUTSTR){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID && tk.cat != LT) error("ID ou constante string esperado para funcionamento da função");
+		tk.processado = true;
+	}
+	
+}
 void testeSint() {
     
     if ((f=fopen("text.text", "r")) == NULL)
@@ -167,7 +295,9 @@ void testeSint() {
             break;
         }
         //Atrib();
-		declVar();
+		//declVar();
+		//declListVar();
+		cmd();
         if (tk.cat = FIM_EXPR)
             printf("\nLINHA %d: Expressão sintaticamente correta!\n\n", linha - 1);
         else {

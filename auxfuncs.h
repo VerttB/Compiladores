@@ -1,0 +1,2 @@
+void consomeEnter();
+void printTokenDados();
