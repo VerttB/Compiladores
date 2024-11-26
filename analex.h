@@ -1,5 +1,9 @@
+#ifndef _ANALEX_
+#define _ANALEX_
+#include <stdio.h>
+#include <stdbool.h>
 typedef enum {
-    ID, CT_I, CT_R,CT_C, LT, FIM_ARQ, SN, PV_R
+    ID, CT_I, CT_R,CT_C, LT, FIM_ARQ, SN, PV_R, FIM_EXPR
 }CATEGORIA;
 
 typedef enum {
@@ -12,15 +16,11 @@ typedef enum{
     CONST, PR, INIT, ENDP, CHAR, INT, REAL, BOOL, DO, WHILE,ENDW, VAR, FROM, TO,BY,ENDV,IF,ELIF,ELSE,ENDI,GETINT,GETCHAR,GETREAL,PUTINT,PUTCHAR,PUTREAL,DT, GETOUT
 }PVR;
 
-char keywords[28][20] = {
-  "const", "pr", "init", "endp", "char", "int", "real", "bool", 
-  "do", "while", "endw", "var", "from", "to", "by", "endv", 
-  "if", "elif", "else", "endi", "getint", "getchar", "getreal", 
-  "putint", "putchar", "putreal", "dt", "getout"
-};
+extern char keywords[28][20];
 
 typedef struct {
     CATEGORIA cat;
+    bool processado;
     union{
         int codigo;
         int valor;
@@ -30,5 +30,12 @@ typedef struct {
     };
 }TOKEN;
 
-int linha = 1;              
+extern int linha;    
+extern TOKEN tk;        
+extern FILE *f;  
+
 TOKEN analex(FILE *f);
+void testeAnalex();
+void error(char []);
+
+#endif

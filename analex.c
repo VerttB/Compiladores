@@ -6,6 +6,15 @@
 #include "analex.h"
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
+
+char keywords[28][20] = {
+  "const", "pr", "init", "endp", "char", "int", "real", "bool", 
+  "do", "while", "endw", "var", "from", "to", "by", "endv", 
+  "if", "elif", "else", "endi", "getint", "getchar", "getreal", 
+  "putint", "putchar", "putreal", "dt", "getout"
+};
+
+
 void error(char err[]){
 	printf("%s na linha %d", err, linha);
 	exit(1);
@@ -15,8 +24,10 @@ TOKEN analex(FILE *f)
 	int	estado = 0, tamL = 0, tamD = 0;
 	char lexema[TAM_LEXEMA] = "";
 	char digitos[TAM_NUM] = "";
-	TOKEN tk;
 	char c;
+
+	if (!tk.processado) return tk; 
+	tk.processado = false;
 	while (true)
 	{
 		c = fgetc(f);
@@ -127,7 +138,9 @@ TOKEN analex(FILE *f)
 			}
 			else if (c == '\n')
 			{
+				tk.cat = FIM_EXPR;
 				linha++;
+				return tk;
 			}
 			else
 			{
@@ -439,19 +452,18 @@ TOKEN analex(FILE *f)
 	}
 }
 
-int	main(void)
+void testeAnalex()
 {
-	FILE *f;
-	TOKEN token;
 	if ((f = fopen("text.text", "r")) == NULL)
 		exit(1);
+	tk.processado = true;
 	while (true)
 	{
-		token = analex(f);
-		switch (token.cat)
+		tk = analex(f);
+		switch (tk.cat)
 		{
 		case SN:
-			switch (token.codigo)
+			switch (tk.codigo)
 			{
 			case ADICAO:
 				printf("<SN, ADICAO>\n");
@@ -533,7 +545,7 @@ int	main(void)
 			}
 			break ;
 		case PV_R:
-			switch (token.codigo)
+			switch (tk.codigo)
 			{
 			case CONST:
 				printf("<PR, CONST>\n");
@@ -647,27 +659,27 @@ int	main(void)
 			}
 			break ;
 		case ID:
-			printf("<ID, %s>\n", token.lexema);
+			printf("<ID, %s>\n", tk.lexema);
 			break ;
 		case CT_I:
-			printf("<CT_I, %d>\n", token.valor);
+			printf("<CT_I, %d>\n", tk.valor);
 			break ;
 		case CT_R:
-			printf("<CT_R, %f>\n", token.valor_r);
+			printf("<CT_R, %f>\n", tk.valor_r);
 			break ;
 		case CT_C:
-			printf("<CT_C, %c> \n", token.c);
+			printf("<CT_C, %c> \n", tk.c);
 			break ;
 		case LT:
-			printf("<LT, %s> \n", token.lexema);
+			printf("<LT, %s> \n", tk.lexema);
 			break ;
 		case FIM_ARQ:
-			printf("<FIM_ARQ, EOF>");
+			printf("<FIM_ARQ, EOF>\n");
 			break ;
 		}
-		if (token.cat == FIM_ARQ)
+		if (tk.cat == FIM_ARQ)
 			break ;
+		tk.processado = true;
 	}
 	fclose(f);
-	return (0);
 }
