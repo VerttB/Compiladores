@@ -140,9 +140,9 @@ TOKEN analex(FILE *f)
 			else if (c == '\n')
 			{
 				estado = 0;
-				tk.cat = FIM_EXPR;
+				//tk.cat = FIM_EXPR;
 				linha++;
-				return tk;
+				//return tk;
 			}
 			else
 			{
@@ -691,9 +691,9 @@ void testeAnalex()
 		case LT:
 			printf("<LT, %s> \n", tk.lexema);
 			break ;
-		case FIM_EXPR:
-			printf("<FIM_EXP>\n");
-			break;
+		// case FIM_EXPR:
+		// 	printf("<FIM_EXP>\n");
+		// 	break;
 		case FIM_ARQ:
 			printf("<FIM_ARQ, EOF>\n");
 			break ;

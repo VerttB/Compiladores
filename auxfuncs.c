@@ -10,5 +10,9 @@ void consomeEnter(){
 }
 
 void printTokenDados(){
-    printf("CATEGORIA: %d, CÓDIGO: %d\n", tk.cat, tk.codigo);
+    printf("\nCATEGORIA: %d, CÓDIGO: %d\n", tk.cat, tk.codigo);
+}
+
+void printFinalizacao(char msg[]){
+    printf("%s na linha %d\n", msg, linha);
 }

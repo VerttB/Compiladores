@@ -1,3 +1,20 @@
-var teste from 2 > 1 dt 6 
+var teste from 2 > 1 dt 6 by a
     getout 
-    endv
+    getint a
+endv
+
+while(1)
+    putint a
+endw
+
+if(a)
+    getout
+    getint a
+    putint 2
+    elif(b)
+        putstr a
+    elif(c)
+        getint a
+    else
+        putchar a
+endi
