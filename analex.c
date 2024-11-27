@@ -17,7 +17,7 @@ char keywords[32][20] = {
 
 
 void error(char err[]){
-	printf("%s na linha %d", err, linha-1);
+	printf("%s na linha %d\n", err, linha-1);
 	exit(1);
 }
 TOKEN analex(FILE *f)

@@ -183,7 +183,7 @@ void tipo(){
 //---------------------------------
 void cmd(){
 	consomeEnter();
-	if(tk.cat != PV_R && tk.cat != ID) error("Identificador ou palavra chave esperado");
+	if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
 	if(tk.codigo == DO){
 		tk.processado = true;
 		tk = analex(f);
@@ -230,6 +230,7 @@ void cmd(){
 	else if(tk.cat == ID) Atrib();
 	else if(tk.codigo == GETOUT){
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == GETINT){
 		tk.processado = true;
@@ -279,6 +280,40 @@ void cmd(){
 		if(tk.cat != ID && tk.cat != LT) error("ID ou constante string esperado para funcionamento da função");
 		tk.processado = true;
 	}
+	else if(tk.codigo == VAR){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID) error("Identificador Esperado");
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != PV_R && tk.codigo != FROM) error("Palavra chave from esperado");
+		tk.processado = true;
+		Expr();
+		if(tk.cat != PV_R && (tk.codigo != DT || tk.codigo != TO)) error("Esperado DT ou TO");
+		tk.processado = true;
+		Expr();
+		if(tk.cat == PV_R && tk.codigo == BY){
+			printf("Entrei no by");
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID && tk.cat != CT_I) error("VAR: Identificador ou constante inteira esperada");
+			tk.processado = true;
+			tk = analex(f);
+		} 
+		
+		while(tk.codigo != ENDV){
+			 if (tk.cat == FIM_ARQ) {
+                error("Fim do arquivo inesperado dentro do loop WHILE");
+            }
+			consomeEnter();
+			cmd();
+			printTokenDados();
+		}
+		if(tk.cat != PV_R && tk.codigo != ENDV) error("VAR: Fim do comando esperado");
+		tk.processado = true;
+		}
+		else if(tk.codigo == ENDI || tk.codigo == ENDW || tk.codigo == ENDP || tk.codigo == ENDV) error("Finalização de comando inesperada");
+		consomeEnter();
 	
 }
 void testeSint() {
