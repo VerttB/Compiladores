@@ -21,7 +21,9 @@ void testeSint();
 
 //
 
-
+void prog();
+void declDefProc();
+void param();
 void cmd();
 //Lidam com inicialização de variaveis
 void declVar();

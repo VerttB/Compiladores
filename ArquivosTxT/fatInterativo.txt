@@ -1,3 +1,4 @@
+prot teste(&int, int[][], char[], bool)
 def init 
    int fat,n,z
    getint n

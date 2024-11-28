@@ -146,6 +146,7 @@ TOKEN analex(FILE *f)
 			}
 			else
 			{
+				printf(" %c", c);
 				error("CARACTER INVALIDO ENCONTRADO");
 			}
 			break ;

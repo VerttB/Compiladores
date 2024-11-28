@@ -182,7 +182,6 @@ void tipo(){
 }
 //---------------------------------
 void cmd(){
-	printTokenDados();
 	if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
 	if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida");
 	if(tk.codigo == DO){
@@ -210,7 +209,7 @@ void cmd(){
 		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
 	}
 	else if(tk.codigo == WHILE){
-		printf("While Iniciado e ");
+		printf("While Iniciado\n");
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
@@ -234,54 +233,63 @@ void cmd(){
 	else if(tk.cat == ID) Atrib();
 	else if(tk.codigo == GETOUT){
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == GETINT){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID) error("ID esperado para funcionamento da função");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == GETREAL){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID) error("ID esperado para funcionamento da função");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == GETCHAR){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID) error("ID esperado para funcionamento da função");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == GETSTR){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID) error("ID esperado para funcionamento da função");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == PUTINT){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID && tk.cat != CT_I) error("ID ou constante inteira esperado para funcionamento da função");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == PUTREAL){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID && tk.cat != CT_R) error("ID ou constante real esperado para funcionamento da função");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == PUTCHAR){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID && tk.cat != CT_C) error("ID ou constante char esperado para funcionamento da função");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == PUTSTR){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID && tk.cat != LT) error("ID ou constante string esperado para funcionamento da função");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == VAR){
 		tk.processado = true;
@@ -318,7 +326,7 @@ void cmd(){
 		tk.processado = true;
 		}
 		else if(tk.codigo == IF){
-			printf("If iniciado e ");
+			printf("If iniciado\n");
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
@@ -336,7 +344,7 @@ void cmd(){
 				tk = analex(f);
 			}
 			while(tk.codigo == ELIF){
-				printf("Elif iniciado e ");
+				printf("Elif iniciado\n");
 				tk.processado = true;
 				tk = analex(f);
 				if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
@@ -357,7 +365,7 @@ void cmd(){
 				printFinalizacao("Elif finalizado ");	
 			}
 			if(tk.codigo == ELSE){
-				printf("Else iniciado e ");
+				printf("Else iniciado\n");
 				tk.processado = true;
 				tk = analex(f);
 				while(tk.codigo != ENDI){
@@ -376,6 +384,82 @@ void cmd(){
 		|| tk.codigo == ENDV || tk.codigo == ELSE || tk.codigo == ELIF) error("Finalização de comando inesperada");
 	
 }
+
+void declDefProc(){
+
+	if(tk.cat != PV_R) error("Inicializador de Função esperado");
+	tk.processado = true;
+	if(tk.codigo == PROT){
+		printf("Prot incializado e ");
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != ID) error("Identificador esperado");
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
+		tk.processado = true;
+		tk = analex(f);
+		if(!(tk.cat != SN && tk.codigo != PARENTESEFECHADO)){
+			param();
+			while(tk.codigo == COLCHETEABERTO){
+				tk = analex(f);
+				if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+				tk.processado = true;
+				tk = analex(f);
+			}
+			while(tk.codigo == VIRGULA){
+				tk.processado = true;
+				tk = analex(f);
+				param();
+				while(tk.codigo == COLCHETEABERTO){
+				tk.processado = true;
+				tk = analex(f);
+				if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+				tk.processado = true;
+				tk = analex(f);
+			}
+			}
+		}
+		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado");
+		printFinalizacao("Prot finalizado ");
+	} 
+	else if(tk.codigo == DEF){
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat == PV_R && tk.codigo == INIT){
+			tk.processado = true;
+			tk = analex(f);
+			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
+				declListVar();
+			}
+			while(tk.cat == PV_R || tk.cat == ID){
+				if(tk.codigo == ENDP) break;
+				tk.processado = true;
+				if(!(tk.cat != SN && tk.codigo != PARENTESEFECHADO)) error("Abertura de parenteses esperado");
+				cmd();
+				tk = analex(f);
+				tk.processado = true;
+				printTokenDados();
+			}
+		if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
+		tk.processado = true;
+		printFinalizacao("Init finalizado ");
+		}
+		else if(tk.cat == ID);
+		else error("Inicializador ou identificador esperado");
+
+		
+	}
+}
+void param(){
+	if(tk.codigo == ENDERECO){
+				tk.processado = true;
+				tk = analex(f);
+			}
+	tipo();
+			
+}
+
 void testeSint() {
     
     if ((f=fopen("text.text", "r")) == NULL)
@@ -392,7 +476,8 @@ void testeSint() {
         //Atrib();
 		//declVar();
 		//declListVar();
-		cmd();
+		//cmd();
+		declDefProc();
         tk.processado = true;
     }
     fclose(f);
