@@ -9,8 +9,8 @@ int linha;
 FILE *f;
 TOKEN tk;
 
-int main(){
+int main(int argc, char *argv[]){
     //testeAnalex();
     linha = 1;
-    testeSint();
+    testeSint(argv[1]);
 }

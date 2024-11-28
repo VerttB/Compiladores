@@ -16,7 +16,7 @@ void Sobra();
 void Fator();
 void opRel();
 
-void testeSint();
+void testeSint(char *);
 
 
 //

@@ -523,9 +523,9 @@ void param(){
 			
 }
 
-void testeSint() {
+void testeSint(char *p) {
     
-    if ((f=fopen("text.text", "r")) == NULL)
+    if ((f=fopen(p, "r")) == NULL)
         error("Arquivo de entrada da expressão nao encontrado!\n");
 
     tk.processado = true;
