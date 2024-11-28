@@ -206,7 +206,10 @@ void cmd(){
 				}
 			}
 		}
-		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
+		printTokenDados();
+		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("DO - Fechamento de parenteses esperado\n");
+		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.codigo == WHILE){
 		printf("While Iniciado\n");
@@ -229,6 +232,7 @@ void cmd(){
 		if(tk.codigo != ENDW) error("ENDW esperado\n");
 		printFinalizacao("While finalizado corretamente");
 		tk.processado = true;
+		tk = analex(f);
 	}
 	else if(tk.cat == ID) Atrib();
 	else if(tk.codigo == GETOUT){
@@ -379,6 +383,7 @@ void cmd(){
 			if(tk.codigo != ENDI) error("Esperada finalização de If");
 			printFinalizacao("Finalização de If ");
 			tk.processado = true;
+			tk = analex(f);
 		}
 		else if(tk.codigo == ENDI || tk.codigo == ENDW || tk.codigo == ENDP 
 		|| tk.codigo == ENDV || tk.codigo == ELSE || tk.codigo == ELIF) error("Finalização de comando inesperada");
@@ -427,6 +432,7 @@ void declDefProc(){
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat == PV_R && tk.codigo == INIT){
+			printf("Init inicializado");
 			tk.processado = true;
 			tk = analex(f);
 			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
@@ -435,17 +441,74 @@ void declDefProc(){
 			while(tk.cat == PV_R || tk.cat == ID){
 				if(tk.codigo == ENDP) break;
 				tk.processado = true;
-				if(!(tk.cat != SN && tk.codigo != PARENTESEFECHADO)) error("Abertura de parenteses esperado");
+				cmd();
+				tk = analex(f);
+				tk.processado = true;
+			}
+		printTokenDados();
+		if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
+		tk.processado = true;
+		printFinalizacao("Init finalizado ");
+		}
+		else if(tk.cat == ID){
+			printf("Def Id inicializado\n");
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
+			tk.codigo = true;
+			tk = analex(f);
+			if(!(tk.cat != SN && tk.codigo != PARENTESEFECHADO)){
+				tk.processado = true;
+				tk = analex(f);
+				param();
+				tk.processado = true;
+				printTokenDados();
+				if(tk.cat != ID) error("PROC ID = Identificador Esperado");
+				tk.processado = true;
+				tk = analex(f);
+				while(tk.codigo == COLCHETEABERTO){
+					tk = analex(f);
+					if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+					tk.processado = true;
+					tk = analex(f);
+				}
+				while(tk.codigo == VIRGULA){
+					tk.processado = true;
+					tk = analex(f);
+					param();
+					tk.processado = true;
+					if(tk.cat != ID) error("Identificador Esperado");
+					tk.processado = true;
+					tk = analex(f);
+					while(tk.codigo == COLCHETEABERTO){
+					tk.processado = true;
+					tk = analex(f);
+					if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+					tk.processado = true;
+					tk = analex(f);
+				}
+			}
+		}
+		printTokenDados();
+		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado");
+		tk.processado = true;
+			tk = analex(f);
+			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
+				declListVar();
+			}
+			while(tk.cat == PV_R || tk.cat == ID){
+				if(tk.codigo == ENDP) break;
+				tk.processado = true;
 				cmd();
 				tk = analex(f);
 				tk.processado = true;
 				printTokenDados();
 			}
-		if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
-		tk.processado = true;
-		printFinalizacao("Init finalizado ");
+
+		if(tk.codigo != ENDP) error("Finalização de procedimento id esperado");
+			tk.processado = true;
+			printFinalizacao("Proc Id finalizado ");
 		}
-		else if(tk.cat == ID);
 		else error("Inicializador ou identificador esperado");
 
 		
