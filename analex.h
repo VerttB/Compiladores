@@ -36,7 +36,7 @@ extern TOKEN tk;
 extern FILE *f;  
 
 TOKEN analex(FILE *f);
-void testeAnalex();
+void testeAnalex(char *);
 void error(char []);
 
 #endif

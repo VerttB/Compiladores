@@ -437,13 +437,7 @@ TOKEN analex(FILE *f)
 			}
 			break ;
 		case 44:
-			if (c == 'n')
-			{
-				estado = 45;
-			}
-			else if(c == '0'){
-				estado = 46;
-			}
+			if(c == '\n') estado = 0;
 			break ;
 		case 45:
 			tk.cat = CT_C;
@@ -459,9 +453,9 @@ TOKEN analex(FILE *f)
 	}
 }
 
-void testeAnalex()
+void testeAnalex(char *p)
 {
-	if ((f = fopen("text.text", "r")) == NULL)
+	if ((f = fopen(p, "r")) == NULL)
 		exit(1);
 	tk.processado = true;
 	while (true)

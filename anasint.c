@@ -206,7 +206,6 @@ void cmd(){
 				}
 			}
 		}
-		printTokenDados();
 		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("DO - Fechamento de parenteses esperado\n");
 		tk.processado = true;
 		tk = analex(f);
@@ -281,6 +280,7 @@ void cmd(){
 		tk.processado = true;
 		tk = analex(f);
 	}
+	
 	else if(tk.codigo == PUTCHAR){
 		tk.processado = true;
 		tk = analex(f);
@@ -445,7 +445,6 @@ void declDefProc(){
 				tk = analex(f);
 				tk.processado = true;
 			}
-		printTokenDados();
 		if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
 		tk.processado = true;
 		printFinalizacao("Init finalizado ");
@@ -462,7 +461,6 @@ void declDefProc(){
 				tk = analex(f);
 				param();
 				tk.processado = true;
-				printTokenDados();
 				if(tk.cat != ID) error("PROC ID = Identificador Esperado");
 				tk.processado = true;
 				tk = analex(f);
@@ -489,7 +487,6 @@ void declDefProc(){
 				}
 			}
 		}
-		printTokenDados();
 		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado");
 		tk.processado = true;
 			tk = analex(f);
@@ -502,12 +499,11 @@ void declDefProc(){
 				cmd();
 				tk = analex(f);
 				tk.processado = true;
-				printTokenDados();
 			}
 
 		if(tk.codigo != ENDP) error("Finalização de procedimento id esperado");
 			tk.processado = true;
-			printFinalizacao("Proc Id finalizado ");
+			printFinalizacao("Finalização de DEF ID");
 		}
 		else error("Inicializador ou identificador esperado");
 
@@ -523,6 +519,14 @@ void param(){
 			
 }
 
+void prog(){
+	while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
+		declListVar();
+	}
+	while(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)){
+		declDefProc();
+	}
+}
 void testeSint(char *p) {
     
     if ((f=fopen(p, "r")) == NULL)
@@ -533,14 +537,17 @@ void testeSint(char *p) {
     while (true) {
         tk = analex(f);
         if (tk.cat == FIM_ARQ) {
-            printf("\nFim do arquivo fonte encontrado!\n\n");
+            printf("\n------------------------------------\n");
+        	printf("Fim do arquivo %s", p);
+        	printf("\n------------------------------------\n");
             break;
         }
         //Atrib();
 		//declVar();
 		//declListVar();
 		//cmd();
-		declDefProc();
+		//declDefProc();
+		prog();
         tk.processado = true;
     }
     fclose(f);
