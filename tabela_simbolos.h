@@ -1,8 +1,12 @@
+#include <stdbool.h>
+#include <stdio.h>
+
 typedef enum{
     GLOBAL, LOCAL
 }ESCOPO;
+
 typedef enum{
-    INT, REAL, CHAR, BOOL, NA
+    INT, REAL, CHAR, BOOL, NA_TIPO
 }TIPO;
 
 typedef enum{
@@ -10,15 +14,15 @@ typedef enum{
 }IDCATEGORIA;
 
 typedef enum{
-    COPIA, REFERENCIA, NA
+    COPIA, REFERENCIA, NA_PASSAGEM
 }PASSAGEM;
 
 typedef enum{
-    VIVO, ZUMBI, NA
+    VIVO, ZUMBI_, NA_ZUMBI
 }ZUMBI;
 
 typedef enum{
-    SIMPLES, VETOR, MATRIZ, NA
+    SIMPLES, VETOR, MATRIZ, NA_ARRAY
 }ARRAY;
 
 typedef enum{
@@ -60,6 +64,6 @@ typedef struct tabela{
 extern int topo;
 extern Tabela tabela;
 
-void inserirNaTabela(char *, ESCOPO,PASSAGEM, ZUMBI,ARRAY,int, int, EHCONST, valconst, int);
+void inserirNaTabela(char *, ESCOPO ,PASSAGEM, ZUMBI,ARRAY,int, int, EHCONST, ValConst, int);
 void removerDaTabela();
 void printarTabela();

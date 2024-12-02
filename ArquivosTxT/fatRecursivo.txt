@@ -10,8 +10,7 @@ endp
 def fatorial(&int f, int n)
     if(m <= 1) f = 1
     else
-        n = n - 1
-        do fatorial(f, n)
+        do fatorial(f, n - 1)
         f = f*n
     endi
 endp

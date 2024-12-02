@@ -191,16 +191,14 @@ void cmd(){
 		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
 		tk.processado = true;
 		tk = analex(f);
-		if(tk.cat == ID){
-			tk.processado = true;
-			tk = analex(f);
+		if(tk.cat == ID || tk.cat == CT_I || (tk.cat == SN && tk.codigo == PARENTESEABERTO)){
+			Expr();
 			if(tk.cat == SN && tk.codigo == VIRGULA){
 				while(tk.cat == SN && tk.codigo == VIRGULA){
 					tk.processado = true;
 					tk = analex(f);
 					if(!tk.cat == ID) error("Identificador Válido Esperado");
-					tk.processado = true;
-					tk = analex(f);
+					Expr();
 				}
 			}
 		}
