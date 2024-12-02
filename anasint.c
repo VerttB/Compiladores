@@ -77,11 +77,9 @@ void Fator() {
 	tk = analex(f);
 	if (tk.cat == ID) { 
 		tk.processado = true;
-		/*TRATAR IDENTIFICADOR*/
 	}
 	else if (tk.cat == CT_I) {
 		tk.processado = true; 
-		/*TRATAR CONSTANTE INTEIRA*/
 	}
 	else if (tk.cat == SN && tk.codigo == PARENTESEABERTO) {
 		tk.processado = true;
@@ -542,11 +540,6 @@ void testeSint(char *p) {
         	printf("\n------------------------------------\n");
             break;
         }
-        //Atrib();
-		//declVar();
-		//declListVar();
-		//cmd();
-		//declDefProc();
 		prog();
         tk.processado = true;
     }
