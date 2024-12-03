@@ -18,7 +18,6 @@ void opRel(){
 }
 
 void Atrib() {
-	consomeEnter();
 	if (tk.cat != ID) {
 		error("Identificador esperado!\n");
 	}
@@ -65,7 +64,6 @@ void Resto() {
 }
 
 void Sobra() {
-	tk = analex(f);
 	if(tk.cat == SN && (tk.codigo == MULT || tk.codigo == DIV || tk.codigo == AND)) {
 		tk.processado = true;
 		Fator();
@@ -77,9 +75,19 @@ void Fator() {
 	tk = analex(f);
 	if (tk.cat == ID) { 
 		tk.processado = true;
+		tk = analex(f);
+		while(tk.codigo == COLCHETEABERTO){
+			tk.processado = true;
+			Expr();
+			if(tk.cat != SN && tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");			
+			tk.processado = true;
+			tk = analex(f);
+		}
+
 	}
-	else if (tk.cat == CT_I) {
+	else if (tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C) {
 		tk.processado = true; 
+		tk = analex(f);
 	}
 	else if (tk.cat == SN && tk.codigo == PARENTESEABERTO) {
 		tk.processado = true;
@@ -109,29 +117,29 @@ void declVar(){
 			varInit();
 		}
 		else if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
+			printf("Inicio da decl de array var\n");
 			while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 				tk.processado = true;
 				tk = analex(f);
-				if(!(tk.cat != CT_I || tk.cat != ID)){
+				if(tk.cat != CT_I && tk.cat != ID){
 					error("Esperado constante inteira ou identificador \n");
 				}
 				tk.processado = true;
 				tk = analex(f);
-				if(tk.cat != SN || tk.codigo != COLCHETEFECHADO){
+				if(tk.cat != SN && tk.codigo != COLCHETEFECHADO){
 					error("Fechamento de colchetes esperado\n");
 				}
-				else{
-					tk.processado = true;
-					tk = analex(f);
+				tk.processado = true;
+				tk = analex(f);
+				
 				}
 				 arrayInit();
-				}
 		}
 	
 	}
 
 void varInit(){
-	if(tk.cat == CT_C || tk.cat == CT_I || tk.cat == CT_R || tk.cat == LT){
+	if(tk.cat == CT_C || tk.cat == CT_I || tk.cat == CT_R){
 			tk.processado = true;
 			tk = analex(f);
 	}
@@ -144,6 +152,9 @@ void arrayInit(){
 	if(tk.cat == SN && tk.codigo == ATRIBUICAO){
 		tk.processado = true;
 		tk = analex(f);
+		if(tk.cat != SN && tk.codigo != COLCHETEABERTO) error("Abertura de colchetes esperado");
+		tk.processado = true;
+		tk = analex(f);
 		varInit();
 		if(tk.cat == SN && tk.codigo == VIRGULA){
 			while(tk.cat == SN && tk.codigo == VIRGULA){
@@ -152,7 +163,11 @@ void arrayInit(){
 				varInit();
 				}
 			}
+
 		}
+		if(tk.cat != SN && tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+		tk.processado = true;
+		tk = analex(f);
 }
 
 void declListVar(){
@@ -162,6 +177,7 @@ void declListVar(){
 	}
 	tipo();
 	declVar();
+	
 		while(tk.cat == SN && tk.codigo == VIRGULA){
 			tk.processado = true;
 			tk = analex(f);
@@ -316,7 +332,6 @@ void cmd(){
 			 if (tk.cat == FIM_ARQ) {
                 error("Fim do arquivo inesperado dentro do loop WHILE");
             }
-			//consomeEnter();
 			tk.processado = true;
 			cmd();
 			tk = analex(f);
@@ -432,8 +447,10 @@ void declDefProc(){
 			tk.processado = true;
 			tk = analex(f);
 			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
+
 				declListVar();
 			}
+
 			while(tk.cat == PV_R || tk.cat == ID){
 				if(tk.codigo == ENDP) break;
 				tk.processado = true;

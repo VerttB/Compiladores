@@ -3,7 +3,7 @@
 #include <string.h>
 #include "analex.h"
 #include "anasint.h"
-
+#include "tabela_simbolos.h"
 
 int linha;
 FILE *f;
@@ -19,4 +19,6 @@ int main(int argc, char *argv[]){
         linha = 1;
         testeSint(argv[i+1]);
     }
+
+    printarTabela();
 }

@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "analex.h"
 
-void consomeEnter(){
-    while(tk.cat == FIM_EXPR){
-        tk.processado = true;
-        tk = analex(f);
-    }
+void error(char err[]){
+	printf("%s na linha %d\n", err, linha-1);
+	exit(1);
 }
 
 void printTokenDados(){

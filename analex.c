@@ -4,11 +4,12 @@
 #include <string.h>
 #include <ctype.h>
 #include "analex.h"
+#include "auxfuncs.h"
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
 
-char keywords[32][20] = {
-  "const", "pr", "init", "endp", "char", "int", "real", "bool", 
+char keywords[31][20] = {
+  "const", "init", "endp", "char", "int", "real", "bool", 
   "do", "while", "endw", "var", "from", "to", "by", "endv", 
   "if", "elif", "else", "endi", "getint", "getchar", "getreal", 
   "putint", "putchar", "putreal", "dt", "getout", "putstr", "getstr",
@@ -16,10 +17,7 @@ char keywords[32][20] = {
 };
 
 
-void error(char err[]){
-	printf("%s na linha %d\n", err, linha-1);
-	exit(1);
-}
+
 TOKEN analex(FILE *f)
 {
 	int	estado = 0, tamL = 0, tamD = 0;
@@ -140,9 +138,19 @@ TOKEN analex(FILE *f)
 			else if (c == '\n')
 			{
 				estado = 0;
-				//tk.cat = FIM_EXPR;
 				linha++;
-				//return tk;
+			}
+			else if( c == '{'){
+				estado = 48;
+				tk.cat = SN;
+				tk.codigo = CHAVEABERTA;
+				return tk;
+			}
+			else if(c == '}'){
+				estado = 49;
+				tk.cat = SN;
+				tk.codigo = CHAVEFECHADA;
+				return tk;
 			}
 			else
 			{
@@ -550,11 +558,7 @@ void testeAnalex(char *p)
 			{
 			case CONST:
 				printf("<PR, CONST>\n");
-				break ;
-
-			case PR:
-				printf("<PR, PR>\n");
-				break ;
+				break;
 
 			case INIT:
 				printf("<PR, INIT>\n");

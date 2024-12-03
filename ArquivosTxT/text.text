@@ -1,5 +1,6 @@
 prot teste(&int, int[][], char[], bool)
 def init 
+    int b[2][2][b] = {1,2,3,4,5}
    int fat,n,z
    getint n
    if (n <= 1)
@@ -7,11 +8,13 @@ def init
     else
         fat = n 
         z = n
-        while (z > 2)
+        while (z > a[2])
             z = z - 1
             fat = fat * z
             
         endw
     endi
+
+    a = b[2] + 3
 endp
 
