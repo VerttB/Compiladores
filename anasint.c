@@ -138,18 +138,16 @@ void declVar(){
 				}
 				tk.processado = true;
 				tk = analex(f);
-				printTokenDados();
 				if(tk.cat != SN && tk.codigo != COLCHETEFECHADO){
 					error("Fechamento de colchetes esperado\n");
 				}
-				printf("Uai");
 				tk.processado = true;
 				tk = analex(f);
-				printTokenDados();
 				}
 				 arrayInit();
 		}
-		inserirNaTabela(tokenInfo);
+		inserirNaTabela(tokenInfo); //Insere as declarações de variável
+
 	}
 
 	void varInit(){
@@ -201,10 +199,8 @@ void declListVar(){
 		tk = analex(f);
 		tokenInfo.ehConst = CONST_;
 	}
-
 	tipo();
 	declVar();
-	
 		while(tk.cat == SN && tk.codigo == VIRGULA){
 			tk.processado = true;
 			tk = analex(f);
@@ -228,7 +224,7 @@ void tipo(){
 //---------------------------------
 void cmd(){
 	if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
-	if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida");
+	if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida"); //Inválido se for DEF ou PROT
 	if(tk.codigo == DO){
 		tk.processado = true;
 		tk = analex(f);
@@ -436,11 +432,22 @@ void declDefProc(){
 
 	if(tk.cat != PV_R) error("Inicializador de Função esperado");
 	tk.processado = true;
+
 	if(tk.codigo == PROT){
 		printf("Prot incializado e ");
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != ID) error("Identificador esperado");
+		strcpy(tokenInfo.lexema, tk.lexema);
+		tokenInfo.array = NA_ARRAY;
+		tokenInfo.escopo = GLOBAL;
+		tokenInfo.ehConst = NORMAL;
+		tokenInfo.zumbi = NA_ZUMBI;
+		tokenInfo.passagem = NA_PASSAGEM;
+		tokenInfo.tipo = NA_TIPO;
+		tokenInfo.idcategoria = PROC;
+		inserirNaTabela(tokenInfo); //Inserção do PROC PROT
+		resetTokenInfo(&tokenInfo);
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
@@ -449,22 +456,32 @@ void declDefProc(){
 		if(!(tk.cat != SN && tk.codigo != PARENTESEFECHADO)){
 			param();
 			while(tk.codigo == COLCHETEABERTO){
+				tokenInfo.array = VETOR;
 				tk = analex(f);
 				if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 				tk.processado = true;
 				tk = analex(f);
 			}
+			tokenInfo.escopo = LOCAL;
+			tokenInfo.ehConst = NORMAL;
+			tokenInfo.zumbi = NA_ZUMBI;
+			inserirNaTabela(tokenInfo); //Insere se existir, o primeiro parâmetro em PROC
 			while(tk.codigo == VIRGULA){
+				tokenInfo.escopo = LOCAL; //Repetindo porque eu reseto após cada inserção
+				tokenInfo.ehConst = NORMAL;
+				tokenInfo.array = SIMPLES;
 				tk.processado = true;
 				tk = analex(f);
 				param();
 				while(tk.codigo == COLCHETEABERTO){
+				tokenInfo.array = VETOR;
 				tk.processado = true;
 				tk = analex(f);
 				if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 				tk.processado = true;
 				tk = analex(f);
 			}
+				inserirNaTabela(tokenInfo); //Insere os outros parâmetros de PROC
 			}
 		}
 		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado");
@@ -479,6 +496,7 @@ void declDefProc(){
 			tk = analex(f);
 			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 				tokenInfo.escopo = LOCAL;
+				tokenInfo.idcategoria = VAR_LOCAL;
 				declListVar();
 			}
 
@@ -536,6 +554,7 @@ void declDefProc(){
 			tk = analex(f);
 			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 				tokenInfo.escopo = LOCAL;
+				tokenInfo.idcategoria = VAR_LOCAL;
 				declListVar();
 			}
 			while(tk.cat == PV_R || tk.cat == ID){
@@ -556,20 +575,27 @@ void declDefProc(){
 	}
 }
 void param(){
+	tokenInfo.idcategoria = PROC_PAR;
 	if(tk.codigo == ENDERECO){
 				tk.processado = true;
 				tk = analex(f);
+				tokenInfo.passagem = REFERENCIA;
 			}
+	else tokenInfo.passagem = COPIA;
 	tipo();
 			
 }
 
 void prog(){
-	tokenInfo.escopo = GLOBAL;
+	
 	while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
+	tokenInfo.escopo = GLOBAL;
+	tokenInfo.idcategoria = VAR_GLOBAL;
 		declListVar();
 	}
 	while(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)){
+		tokenInfo.escopo = LOCAL;
+		tokenInfo.idcategoria = VAR_LOCAL;
 		declDefProc();
 	}
 }

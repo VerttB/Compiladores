@@ -85,5 +85,6 @@ void printarTabela();
 void inserirNaTabela(TokenInfo );
 void removerDaTabela();
 void limparTabela();
+void resetTokenInfo(TokenInfo *);
 
 #endif

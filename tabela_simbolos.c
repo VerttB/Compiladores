@@ -57,6 +57,7 @@ void inserirNaTabela(TokenInfo token){
     token.endereco = tabela.topo;
     tabela.tokensTab[tabela.topo] = token;
     tabela.topo++;
+    resetTokenInfo(&token);
 }
 
 void buscaDeclRep(char *lexema){
@@ -64,11 +65,20 @@ void buscaDeclRep(char *lexema){
         if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0) error("Declaração repetida");
     }
 }
+
+int buscaLexPost(char *lexema){
+     for(int i = 0;i<tabela.topo;i++){
+        if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0) return i;
+    }
+    error("Declaração não encontrada");
+}
 void printarTabela(){
     TokenInfo aux;
     printf(" tamanho = %d\n", tabela.topo);
-    printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬\n");
-    printf("│\t\tLexema\t\t│tipo│escopo│passagem│zumbi│  array  │dimUm│dimDois│ehConst│valConst│endereço│\n");
+    printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬─────────┬\n");
+    printf("│\t\tLexema\t\t│tipo│escopo│passagem│zumbi│  array  │dimUm│dimDois│ehConst│valConst│endereço│categoria│\n");
+    printf("├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
+
     for(int i = 0 ; i < tabela.topo;i++){
         aux = tabela.tokensTab[i];
         printf("│%-31s",aux.lexema);
@@ -89,11 +99,12 @@ void printarTabela(){
         else{
             printf("│%-8s", "N/A");
         }
-        printf("│%-8d│", aux.endereco);
-        printf("\n");
+        printf("│%-8d", aux.endereco);
+        printf("│%-9s│", T_IdCategoria[aux.idcategoria]);
+    printf("\n├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
 
     }
-    printf("└───────────────────────────────┴────┴──────┴────────┴─────┴─────────┴─────┴───────┴───────┴────────┴────────┘\n");
+    printf("└───────────────────────────────┴────┴──────┴────────┴─────┴─────────┴─────┴───────┴───────┴────────┴────────┴─────────┘\n");
 
  }
 
@@ -108,4 +119,9 @@ void printarTabela(){
     printf("Limpando tabela");
     memset(tabela.tokensTab, 0, sizeof(tabela.tokensTab)); // Preenche com zeros
     tabela.topo = 0; // Reseta o topo
+}
+
+void resetTokenInfo(TokenInfo *token) {
+    memset(token, 0, sizeof(TokenInfo));
+    memset(token->lexema, 0, sizeof(token->lexema));
 }
