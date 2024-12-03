@@ -1,3 +1,5 @@
+const char teste = 'a'
+int p[2]
 prot teste(&int, int[][], char[], bool)
 def init 
     int b[2][2][b] = {1,2,3,4,5}

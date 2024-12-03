@@ -1,6 +1,6 @@
 int a,b
 int x = 8
-
+const int c = 2
 prot subtrair(&int, int, int)
 
 def somar(&int r, int a, int b) 

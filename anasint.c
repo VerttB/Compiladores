@@ -1,8 +1,13 @@
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
 #include "analex.h"
 #include "anasint.h"
 #include "auxfuncs.h"
-#include <stdio.h>
-#include <stdbool.h>
+#include "tabela_simbolos.h"
+
+TokenInfo tokenInfo;
 
 void opRel(){
 	tk = analex(f);
@@ -105,9 +110,15 @@ void Fator() {
 }
 
 void declVar(){
+	int dimensao = 0;
+	tokenInfo.zumbi = NA_ZUMBI;
+	tokenInfo.array = SIMPLES;
 	if(tk.cat != ID){
 		error("Identificador esperado\n");
 	}
+		printf("pre print");
+		strcpy(tokenInfo.lexema, tk.lexema);
+		printf("Inseri no token %s\n", tokenInfo.lexema);
 		tk.processado = true;
 		tk = analex(f);
 
@@ -121,32 +132,40 @@ void declVar(){
 			while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 				tk.processado = true;
 				tk = analex(f);
+				tokenInfo.array = VETOR;
 				if(tk.cat != CT_I && tk.cat != ID){
 					error("Esperado constante inteira ou identificador \n");
 				}
 				tk.processado = true;
 				tk = analex(f);
+				printTokenDados();
 				if(tk.cat != SN && tk.codigo != COLCHETEFECHADO){
 					error("Fechamento de colchetes esperado\n");
 				}
+				printf("Uai");
 				tk.processado = true;
 				tk = analex(f);
-				
+				printTokenDados();
 				}
 				 arrayInit();
 		}
-	
+		inserirNaTabela(tokenInfo);
 	}
 
-void varInit(){
-	if(tk.cat == CT_C || tk.cat == CT_I || tk.cat == CT_R){
-			tk.processado = true;
-			tk = analex(f);
-	}
-		else{
-			error("Inicialização de variável inválida");
+	void varInit(){
+		if(tk.cat == CT_C || tk.cat == CT_I || tk.cat == CT_R){
+				if(tokenInfo.ehConst == CONST_){
+					if(tk.cat == CT_C) tokenInfo.valConst.char_const = tk.c;
+					else if(tk.cat == CT_I) tokenInfo.valConst.int_const = tk.valor;
+					else tokenInfo.valConst.float_const = tk.valor_r; //Aceita os reais
+				}
+				tk.processado = true;
+				tk = analex(f);
 		}
-}
+			else{
+				error("Inicialização de variável inválida");
+			}
+	}
 
 void arrayInit(){
 	if(tk.cat == SN && tk.codigo == ATRIBUICAO){
@@ -164,17 +183,25 @@ void arrayInit(){
 				}
 			}
 
-		}
+		
 		if(tk.cat != SN && tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 		tk.processado = true;
 		tk = analex(f);
+	}
 }
 
 void declListVar(){
+	tokenInfo.ehConst = NORMAL;
+	tokenInfo.passagem = NA_PASSAGEM;
+	tokenInfo.zumbi = NA_ZUMBI;
+	tokenInfo.DimUm = 0;
+	tokenInfo.DimDois = 0;
 	if(tk.cat == PV_R && tk.codigo == CONST){
 		tk.processado = true;
 		tk = analex(f);
+		tokenInfo.ehConst = CONST_;
 	}
+
 	tipo();
 	declVar();
 	
@@ -186,7 +213,11 @@ void declListVar(){
 	
 }
 void tipo(){
-	if(tk.codigo == INT || tk.codigo == REAL || tk.codigo == BOOL || tk.codigo == CHAR){
+	if(tk.cat == PV_R && (tk.codigo == INT || tk.codigo == REAL || tk.codigo == BOOL || tk.codigo == CHAR)){
+		if (tk.codigo == INT) tokenInfo.tipo = INT_;
+		else if(tk.codigo == REAL) tokenInfo.tipo = REAL_;
+		else if(tk.codigo == CHAR) tokenInfo.tipo = CHAR_;
+		else tokenInfo.tipo = BOOL_;
 		tk.processado = true;
 		tk = analex(f);
 	}
@@ -447,7 +478,7 @@ void declDefProc(){
 			tk.processado = true;
 			tk = analex(f);
 			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
-
+				tokenInfo.escopo = LOCAL;
 				declListVar();
 			}
 
@@ -504,6 +535,7 @@ void declDefProc(){
 		tk.processado = true;
 			tk = analex(f);
 			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
+				tokenInfo.escopo = LOCAL;
 				declListVar();
 			}
 			while(tk.cat == PV_R || tk.cat == ID){
@@ -533,6 +565,7 @@ void param(){
 }
 
 void prog(){
+	tokenInfo.escopo = GLOBAL;
 	while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 		declListVar();
 	}

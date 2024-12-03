@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
         //testeAnalex(argv[i+1]);
         linha = 1;
         testeSint(argv[i+1]);
+        printarTabela();
+        limparTabela();
     }
-
-    printarTabela();
 }

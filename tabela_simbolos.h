@@ -56,7 +56,7 @@ typedef struct valconst{
     
 }ValConst;
 
-typedef struct tabelaS{
+typedef struct tokenInfo{
     char lexema[31];
     ESCOPO escopo;
     TIPO tipo;
@@ -69,19 +69,21 @@ typedef struct tabelaS{
     EHCONST ehConst;
     ValConst valConst;
     int endereco;
-}TabelaS;
+}TokenInfo;
 
 
 typedef struct tabela{
     int topo;
-    TabelaS tabelaS[1024];
+    TokenInfo tokensTab[1024];
 }Tabela;
 
 extern int topo;
 extern Tabela tabela;
 
-void inserirNaTabela(int,char *, ESCOPO ,PASSAGEM, ZUMBI,ARRAY,int, int, EHCONST, ValConst, int);
-void removerDaTabela();
+void buscaDeclRep();
 void printarTabela();
+void inserirNaTabela(TokenInfo );
+void removerDaTabela();
+void limparTabela();
 
 #endif
