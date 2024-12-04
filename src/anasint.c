@@ -6,6 +6,7 @@
 #include "anasint.h"
 #include "auxfuncs.h"
 #include "tabela_simbolos.h"
+#include "cores.h"
 
 TokenInfo tokenInfo;
 
@@ -116,9 +117,7 @@ void declVar(){
 	if(tk.cat != ID){
 		error("Identificador esperado\n");
 	}
-		printf("pre print");
 		strcpy(tokenInfo.lexema, tk.lexema);
-		printf("Inseri no token %s\n", tokenInfo.lexema);
 		tk.processado = true;
 		tk = analex(f);
 
@@ -490,8 +489,17 @@ void declDefProc(){
 	else if(tk.codigo == DEF){
 		tk.processado = true;
 		tk = analex(f);
+		tokenInfo.array = NA_ARRAY;
+		tokenInfo.idcategoria = PROC;
+		tokenInfo.ehConst = NORMAL;
+		tokenInfo.passagem = NA_PASSAGEM;
+		tokenInfo.escopo = GLOBAL;
+		tokenInfo.tipo = NA_TIPO;
+		tokenInfo.zumbi = NA_ZUMBI;
 		if(tk.cat == PV_R && tk.codigo == INIT){
 			printf("Init inicializado");
+			strcpy(tokenInfo.lexema, "Init");
+			inserirNaTabela(tokenInfo);
 			tk.processado = true;
 			tk = analex(f);
 			while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
@@ -513,6 +521,12 @@ void declDefProc(){
 		}
 		else if(tk.cat == ID){
 			printf("Def Id inicializado\n");
+			int pos;
+			if((pos = buscaLexPos(tk.lexema)) == -1){
+				printf("Declaração não encontrada VALOR DE POS %d", pos);
+				strcpy(tokenInfo.lexema, tk.lexema);
+				inserirNaTabela(tokenInfo);
+			}
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
@@ -524,28 +538,60 @@ void declDefProc(){
 				param();
 				tk.processado = true;
 				if(tk.cat != ID) error("PROC ID = Identificador Esperado");
+				strcpy(tokenInfo.lexema, tk.lexema);
 				tk.processado = true;
 				tk = analex(f);
+				int dimensaoArray = 0;
 				while(tk.codigo == COLCHETEABERTO){
+					dimensaoArray++;
+					if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
+					tk.processado = true;
+					tk = analex(f);
+					if(tk.cat != ID && tk.cat != CT_I) error("PROC ID - COnstante inteira ou identificador esperado");
+					tk.processado = true;
 					tk = analex(f);
 					if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 					tk.processado = true;
 					tk = analex(f);
 				}
+				if(dimensaoArray == 1) tokenInfo.array = SIMPLES;
+				else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
+				else tokenInfo.array = SIMPLES;
+				if(pos == -1) inserirNaTabela(tokenInfo);
+				else{
+					pos++;
+					inserirVazios(pos, tokenInfo);
+				}
 				while(tk.codigo == VIRGULA){
+					dimensaoArray = 0;
 					tk.processado = true;
 					tk = analex(f);
 					param();
 					tk.processado = true;
 					if(tk.cat != ID) error("Identificador Esperado");
+					strcpy(tokenInfo.lexema, tk.lexema);
 					tk.processado = true;
 					tk = analex(f);
 					while(tk.codigo == COLCHETEABERTO){
+					dimensaoArray++;
+					if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
+					tk.processado = true;
+					tk = analex(f);
+					if(tk.cat != ID && tk.cat != CT_I) error("PROC ID - COnstante inteira ou identificador esperado");
 					tk.processado = true;
 					tk = analex(f);
 					if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 					tk.processado = true;
 					tk = analex(f);
+									
+				}
+				if(dimensaoArray == 1) tokenInfo.array = SIMPLES;
+				else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
+				else tokenInfo.array = SIMPLES;	
+				if(pos == -1) inserirNaTabela(tokenInfo);
+				else{
+					pos++;
+					inserirVazios(pos, tokenInfo);
 				}
 			}
 		}

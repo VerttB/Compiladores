@@ -59,21 +59,27 @@ void inserirNaTabela(TokenInfo token){
     tabela.topo++;
     resetTokenInfo(&token);
     printarTabela();
-    printf("Pressione Enter para continuar...\n");
-    getchar();
+    
 }
 
 void buscaDeclRep(TokenInfo token){
     for(int i = 0;i<tabela.topo;i++){
-        if(strcmp(token.lexema, tabela.tokensTab[i].lexema) == 0 && token.escopo == GLOBAL) error("Declaração repetida");
+        if(strcmp(token.lexema, tabela.tokensTab[i].lexema) == 0){
+            if(token.escopo == GLOBAL && tabela.tokensTab[i].escopo == GLOBAL){
+                if(token.idcategoria == tabela.tokensTab[i].idcategoria) error("Multiplas declarações do mesmo tipo");
+            }
+            else{
+                error("Declarações com mesmo nome encontrada");
+            }
+        }
     }
 }
 
-int buscaLexPost(char *lexema){
+int buscaLexPos(char *lexema){
      for(int i = 0;i<tabela.topo;i++){
         if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0) return i;
     }
-    error("Declaração não encontrada");
+    return -1;
 }
 void printarTabela(){
     TokenInfo aux;
@@ -108,7 +114,8 @@ void printarTabela(){
 
     }
     printf("└───────────────────────────────┴────┴──────┴────────┴─────┴─────────┴─────┴───────┴───────┴────────┴────────┴─────────┘\n");
-
+    printf("Pressione Enter para continuar...\n");
+    getchar();
  }
 
  void removerDaTabela(){
@@ -127,4 +134,16 @@ void printarTabela(){
 void resetTokenInfo(TokenInfo *token) {
     memset(token, 0, sizeof(TokenInfo));
     memset(token->lexema, 0, sizeof(token->lexema));
+}
+
+void inserirVazios(int procPos, TokenInfo tokenInfo){
+    TokenInfo aux = tabela.tokensTab[procPos];
+    printf("LEXEMA DO TOKEN %s POS A INSERIR %d", tokenInfo.lexema, procPos);
+    if(strcmp(aux.lexema, "") != 0) error("Quantidade de argumentos inválida");
+    if(aux.tipo != tokenInfo.tipo) error("Tipo dos argumentos inválido");
+    if(aux.array != tokenInfo.array) error("Tipo de variavel|vetor|matriz inválido");
+    if(aux.passagem != tokenInfo.passagem) error("Passagem de argumento inválido");
+    strcpy(tabela.tokensTab[procPos].lexema, tokenInfo.lexema);
+    printarTabela();
+
 }

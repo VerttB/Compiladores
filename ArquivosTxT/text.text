@@ -6,7 +6,6 @@ def init
     int b[2][2][b] = {1,2,3,4,5}
    int fat,n,z
    getint n
-   var loop from 1  2  endv
    if (n <= 1)
         fat = 1
     else

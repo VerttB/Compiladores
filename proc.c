@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "analex.h"
-#include "anasint.h"
-#include "tabela_simbolos.h"
+#include "src/analex.h"
+#include "src/anasint.h"
+#include "src/tabela_simbolos.h"
+#include "src/ansi_escape.h"
 
 int linha;
 FILE *f;
@@ -17,8 +18,10 @@ int main(int argc, char *argv[]){
         printf("\n------------------------------------\n");
         //testeAnalex(argv[i+1]);
         linha = 1;
+        setupConsole();
         testeSint(argv[i+1]);
         printarTabela();
         limparTabela();
+        restoreConsole();
     }
 }
