@@ -3,6 +3,7 @@
 #include <string.h>
 #include "tabela_simbolos.h"
 #include "auxfuncs.h"
+#include "cores.h"
 
 Tabela tabela;
 
@@ -89,8 +90,10 @@ void printarTabela(){
     printf("├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
 
     for(int i = 0 ; i < tabela.topo;i++){
+        printf("│");
+        if(i == tabela.topo - 1) printf("%s", _GREEN_);
         aux = tabela.tokensTab[i];
-        printf("│%-31s",aux.lexema);
+        printf("%-31s",aux.lexema);
         printf("│%-4s", T_tipo[aux.tipo]);
         printf("│%-6s", T_escopo[aux.escopo]);
         printf("│%-8s", T_passagem[aux.passagem]);
@@ -109,10 +112,12 @@ void printarTabela(){
             printf("│%-8s", "N/A");
         }
         printf("│%-8d", aux.endereco);
-        printf("│%-9s│", T_IdCategoria[aux.idcategoria]);
+        printf("│%-9s", T_IdCategoria[aux.idcategoria]);
+        printf("%s│",_NORMAL_);
     printf("\n├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
 
     }
+   
     printf("└───────────────────────────────┴────┴──────┴────────┴─────┴─────────┴─────┴───────┴───────┴────────┴────────┴─────────┘\n");
     printf("Pressione Enter para continuar...\n");
     getchar();

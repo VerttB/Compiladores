@@ -60,6 +60,7 @@
     "editor.defaultFormatter": "xaver.clang-format"
   },
   "files.associations": {
-    "stdbool.h": "c"
+    "stdbool.h": "c",
+    "analex.h": "c"
   }
 }

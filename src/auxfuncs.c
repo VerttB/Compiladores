@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "analex.h"
-
+#include "cores.h"
 void error(char err[]){
+    printf(_RED_);
 	printf("%s na linha %d\n", err, linha-1);
+    printf(_NORMAL_);
 	exit(1);
 }
 
