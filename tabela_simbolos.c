@@ -58,11 +58,14 @@ void inserirNaTabela(TokenInfo token){
     tabela.tokensTab[tabela.topo] = token;
     tabela.topo++;
     resetTokenInfo(&token);
+    printarTabela();
+    printf("Pressione Enter para continuar...\n");
+    getchar();
 }
 
-void buscaDeclRep(char *lexema){
+void buscaDeclRep(TokenInfo token){
     for(int i = 0;i<tabela.topo;i++){
-        if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0) error("Declaração repetida");
+        if(strcmp(token.lexema, tabela.tokensTab[i].lexema) == 0 && token.escopo == GLOBAL) error("Declaração repetida");
     }
 }
 
@@ -94,7 +97,7 @@ void printarTabela(){
             if(aux.tipo == INT_) printf("│%-8d", aux.valConst.int_const);
             else if(aux.tipo == CHAR_)printf("│%-8c", aux.valConst.char_const);
             else if(aux.tipo == REAL_) printf("│%-8f", aux.valConst.float_const);   
-            else printf("│%-8s", aux.valConst.bool_const);
+            else printf("│%-8s", aux.valConst.bool_const == 1 ? "True" : "False");
         }
         else{
             printf("│%-8s", "N/A");

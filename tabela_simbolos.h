@@ -80,7 +80,7 @@ typedef struct tabela{
 extern int topo;
 extern Tabela tabela;
 
-void buscaDeclRep();
+void buscaDeclRep(TokenInfo );
 void printarTabela();
 void inserirNaTabela(TokenInfo );
 void removerDaTabela();
