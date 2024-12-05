@@ -111,7 +111,7 @@ void Fator() {
 }
 
 void declVar(){
-	int dimensao = 0;
+	int dimensaoArray = 0;
 	tokenInfo.zumbi = NA_ZUMBI;
 	tokenInfo.array = SIMPLES;
 	if(tk.cat != ID){
@@ -129,9 +129,10 @@ void declVar(){
 		else if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 			printf("Inicio da decl de array var\n");
 			while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
+				dimensaoArray++;
+				if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
 				tk.processado = true;
 				tk = analex(f);
-				tokenInfo.array = VETOR;
 				if(tk.cat != CT_I && tk.cat != ID){
 					error("Esperado constante inteira ou identificador \n");
 				}
@@ -144,7 +145,11 @@ void declVar(){
 				tk = analex(f);
 				}
 				 arrayInit();
+				 if(dimensaoArray == 1) tokenInfo.array = VETOR;
+				else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
+				else tokenInfo.array = SIMPLES;	
 		}
+		
 		inserirNaTabela(tokenInfo); //Insere as declarações de variável
 
 	}
@@ -456,7 +461,9 @@ void declDefProc(){
 			param();
 			while(tk.codigo == COLCHETEABERTO){
 				tokenInfo.array = VETOR;
+				tk.processado = true;
 				tk = analex(f);
+				printTokenDados();
 				if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 				tk.processado = true;
 				tk = analex(f);
@@ -554,7 +561,8 @@ void declDefProc(){
 					tk.processado = true;
 					tk = analex(f);
 				}
-				if(dimensaoArray == 1) tokenInfo.array = SIMPLES;
+				printf("Dimensão %d", dimensaoArray);
+				if(dimensaoArray == 1) tokenInfo.array = VETOR;
 				else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
 				else tokenInfo.array = SIMPLES;
 				if(pos == -1) inserirNaTabela(tokenInfo);
@@ -585,7 +593,7 @@ void declDefProc(){
 					tk = analex(f);
 									
 				}
-				if(dimensaoArray == 1) tokenInfo.array = SIMPLES;
+				if(dimensaoArray == 1) tokenInfo.array = VETOR;
 				else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
 				else tokenInfo.array = SIMPLES;	
 				if(pos == -1) inserirNaTabela(tokenInfo);
