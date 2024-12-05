@@ -1,6 +1,6 @@
 
 int a,b
-prot subtrair(&int, int, int)
+prot subtrair(&int [][], int, int)
 
 def somar(int r, int a, int b) 
     int z
@@ -10,7 +10,7 @@ endp
 
 // Ponto 1
 
-def subtrair(&int r, int a, int b) 
+def subtrair(&int r[a][b], int a, int b) 
     int w
     w = a - b
     r = w

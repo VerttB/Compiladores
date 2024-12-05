@@ -224,7 +224,6 @@
 			error("Esperado declaração de tipo de variável\n");
 		}
 	}
-	//---------------------------------
 	void cmd(){
 		if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
 		if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida"); //Inválido se for DEF ou PROT
@@ -431,10 +430,8 @@
 	}
 
 	void declDefProc(){
-
 		if(tk.cat != PV_R) error("Inicializador de Função esperado");
 		tk.processado = true;
-
 		if(tk.codigo == PROT){
 			printf("Prot incializado e ");
 			tk.processado = true;
@@ -457,7 +454,6 @@
 			tk = analex(f);
 			printTokenDados();
 			if(!(tk.cat == SN && tk.codigo == PARENTESEFECHADO)){
-				printf("Entrei na do paresntese fechado");
 			do{
 				if(tk.cat == SN && tk.codigo == VIRGULA){
 					tk.processado = true;
@@ -467,18 +463,23 @@
 				tokenInfo.ehConst = NORMAL;
 				tokenInfo.zumbi = NA_ZUMBI;
 				param();
+				int dimensaoArray = 0;
 				while(tk.codigo == COLCHETEABERTO){
-					tokenInfo.array = VETOR;
+					dimensaoArray++;
+					if(dimensaoArray > 2) error("PROT - Tamanho de array inválido");
 					tk.processado = true;
 					tk = analex(f);
 					if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 					tk.processado = true;
 					tk = analex(f);
 				}
+
+			if(dimensaoArray == 1) tokenInfo.array = VETOR;
+			else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
+			else tokenInfo.array = SIMPLES;
 			inserirNaTabela(tokenInfo);
 			}while(tk.cat == SN && tk.codigo == VIRGULA);
 		}
-			
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado");
 			printFinalizacao("Prot finalizado ");
 		} 
@@ -519,7 +520,6 @@
 				printf("Def %s inicializado\n", tk.lexema);
 				int pos;
 				if((pos = buscaLexPos(tk.lexema)) == -1){
-					printf("Declaração não encontrada VALOR DE POS %d", pos);
 					strcpy(tokenInfo.lexema, tk.lexema);
 					inserirNaTabela(tokenInfo);
 				}
@@ -529,6 +529,11 @@
 				tk.processado = true;
 				tk = analex(f);
 				if(!(tk.cat == SN && tk.codigo == PARENTESEFECHADO)){
+					do{
+					if(tk.cat == SN && tk.codigo == VIRGULA){
+							tk.processado = true;
+							tk = analex(f);
+						}
 					param();
 					if(tk.cat != ID) error("PROC ID = Identificador Esperado");
 					strcpy(tokenInfo.lexema, tk.lexema);
@@ -547,7 +552,6 @@
 						tk.processado = true;
 						tk = analex(f);
 					}
-					printf("Dimensão %d", dimensaoArray);
 					if(dimensaoArray == 1) tokenInfo.array = VETOR;
 					else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
 					else tokenInfo.array = SIMPLES;
@@ -556,38 +560,7 @@
 						pos++;
 						inserirVazios(pos, tokenInfo);
 					}
-					while(tk.codigo == VIRGULA){
-						dimensaoArray = 0;
-						tk.processado = true;
-						tk = analex(f);
-						param();
-						tk.processado = true;
-						if(tk.cat != ID) error("Identificador Esperado");
-						strcpy(tokenInfo.lexema, tk.lexema);
-						tk.processado = true;
-						tk = analex(f);
-						while(tk.codigo == COLCHETEABERTO){
-						dimensaoArray++;
-						if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
-						tk.processado = true;
-						tk = analex(f);
-						if(tk.cat != ID && tk.cat != CT_I) error("PROC ID - COnstante inteira ou identificador esperado");
-						tk.processado = true;
-						tk = analex(f);
-						if(tk.codigo != COLCHETEFECHADO) error("PROC ID - Fechamento de colchetes esperado");
-						tk.processado = true;
-						tk = analex(f);
-										
-					}
-					if(dimensaoArray == 1) tokenInfo.array = VETOR;
-					else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
-					else tokenInfo.array = SIMPLES;	
-					if(pos == -1) inserirNaTabela(tokenInfo);
-					else{
-						pos++;
-						inserirVazios(pos, tokenInfo);
-					}
-				}
+					}while(tk.codigo == VIRGULA && tk.cat == SN);
 			}
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("PROC ID - Fechamento de parenteses esperado");
 			tk.processado = true;
@@ -610,8 +583,6 @@
 				printFinalizacao("Finalização de DEF ID");
 			}
 			else error("Inicializador ou identificador esperado");
-
-			
 		}
 	}
 	void param(){

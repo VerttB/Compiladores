@@ -27,39 +27,31 @@ TOKEN analex(FILE *f)
 
 	if (!tk.processado) return tk;
 	tk.processado = false;
-	while (true)
-	{
-		
+	while (true){
 		c = fgetc(f);
-		switch (estado)
-		{
+		switch (estado){
 		case 0:
 			if (c == ' ' || c == '\t')
 				estado = 0;
-			else if (c == '_')
-			{
+			else if (c == '_'){
 				estado = 1;
 				lexema[tamL] = c;
 				lexema[++tamL] = '\0';
 			}
-			else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-			{
+			else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
 				estado = 2;
 				lexema[tamL] = c;
 				lexema[++tamL] = '\0';
 			}
-			else if (c >= '0' && c <= '9')
-			{
+			else if (c >= '0' && c <= '9'){
 				estado = 4;
 				digitos[tamD] = c;
 				digitos[++tamD] = '\0';
 			}
-			else if (c == '"')
-			{
+			else if (c == '"'){
 				estado = 9;
 			}
-			else if (c == '\'')
-			{
+			else if (c == '\''){
 				estado = 11;
 			}
 			else if (c == '>')
@@ -78,29 +70,25 @@ TOKEN analex(FILE *f)
 				tk.codigo = VIRGULA;
 				return tk;
 			}
-			else if (c == '(')
-			{
+			else if (c == '('){
 				estado = 32;
 				tk.cat = SN;
 				tk.codigo = PARENTESEABERTO;
 				return tk;
 			}
-			else if (c == ')')
-			{
+			else if (c == ')'){
 				estado = 33;
 				tk.cat = SN;
 				tk.codigo = PARENTESEFECHADO;
 				return tk;
 			}
-			else if (c == '[')
-			{
+			else if (c == '['){
 				estado = 34;
 				tk.cat = SN;
 				tk.codigo = COLCHETEABERTO;
 				return tk;
 			}
-			else if (c == ']')
-			{
+			else if (c == ']'){
 				estado = 35;
 				tk.cat = SN;
 				tk.codigo = COLCHETEFECHADO;
@@ -108,22 +96,19 @@ TOKEN analex(FILE *f)
 			}
 			else if (c == '&')
 				estado = 36;
-			else if (c == '+')
-			{
+			else if (c == '+'){
 				estado = 39;
 				tk.cat = SN;
 				tk.codigo = ADICAO;
 				return tk;
 			}
-			else if (c == '-')
-			{
+			else if (c == '-'){
 				estado = 40;
 				tk.cat = SN;
 				tk.codigo = SUB;
 				return (tk);
 			}
-			else if (c == '*')
-			{
+			else if (c == '*'){
 		
 				estado = 41;
 				tk.cat = SN;
@@ -692,9 +677,6 @@ void testeAnalex(char *p)
 		case LT:
 			printf("<LT, %s> \n", tk.lexema);
 			break ;
-		// case FIM_EXPR:
-		// 	printf("<FIM_EXP>\n");
-		// 	break;
 		case FIM_ARQ:
 			printf("<FIM_ARQ, EOF>\n");
 			break ;
