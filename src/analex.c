@@ -25,10 +25,11 @@ TOKEN analex(FILE *f)
 	char digitos[TAM_NUM] = "";
 	char c;
 
-	if (!tk.processado) return tk; 
+	if (!tk.processado) return tk;
 	tk.processado = false;
 	while (true)
 	{
+		
 		c = fgetc(f);
 		switch (estado)
 		{
@@ -123,6 +124,7 @@ TOKEN analex(FILE *f)
 			}
 			else if (c == '*')
 			{
+		
 				estado = 41;
 				tk.cat = SN;
 				tk.codigo = MULT;

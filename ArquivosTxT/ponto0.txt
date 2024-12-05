@@ -1,8 +1,8 @@
-int a,b
 
+int a,b
 prot subtrair(&int, int, int)
 
-def somar(&int r, int a, int b) 
+def somar(int r, int a, int b) 
     int z
     z = a + b
     r = z
@@ -22,7 +22,7 @@ def multiplicar(&int r, int a, int b)
     int x, y
     x = a
     y = b
-    r = x * y
+    r = x
 endp
 
 def dividir(&int r, int a, int b) 
