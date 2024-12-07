@@ -601,6 +601,7 @@
 	}
 	void param(){
 		tokenInfo.idcategoria = PROC_PAR;
+		tokenInfo.escopo = LOCAL;
 		if(tk.codigo == ENDERECO){
 					tk.processado = true;
 					tk = analex(f);
