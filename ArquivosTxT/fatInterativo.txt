@@ -1,0 +1,19 @@
+prot teste(&int[][], int[], char[][], bool)
+
+def teste(&int a[a][b], int b[a],char p[3][2], bool ll)
+    int z
+endp
+def init 
+   int fat,n,z
+   getint n
+   if (n <= 1)
+        fat = 1
+    else
+        fat = n 
+        z = n
+        while (z > 2)
+            z = z - 1
+            fat = fat * z
+        endw
+    endi
+endp

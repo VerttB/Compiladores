@@ -4,51 +4,54 @@
 #include <string.h>
 #include <ctype.h>
 #include "analex.h"
+#include "auxfuncs.h"
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
-void error(char err[]){
-	printf("%s na linha %d", err, linha);
-	exit(1);
-}
+
+char keywords[31][20] = {
+  "const", "init", "endp", "char", "int", "real", "bool", 
+  "do", "while", "endw", "var", "from", "to", "by", "endv", 
+  "if", "elif", "else", "endi", "getint", "getchar", "getreal", 
+  "putint", "putchar", "putreal", "dt", "getout", "putstr", "getstr",
+  "prot", "def"
+};
+
+
+
 TOKEN analex(FILE *f)
 {
 	int	estado = 0, tamL = 0, tamD = 0;
 	char lexema[TAM_LEXEMA] = "";
 	char digitos[TAM_NUM] = "";
-	TOKEN tk;
 	char c;
-	while (true)
-	{
+
+	if (!tk.processado) return tk;
+	tk.processado = false;
+	while (true){
 		c = fgetc(f);
-		switch (estado)
-		{
+		switch (estado){
 		case 0:
 			if (c == ' ' || c == '\t')
 				estado = 0;
-			else if (c == '_')
-			{
+			else if (c == '_'){
 				estado = 1;
 				lexema[tamL] = c;
 				lexema[++tamL] = '\0';
 			}
-			else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-			{
+			else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
 				estado = 2;
 				lexema[tamL] = c;
 				lexema[++tamL] = '\0';
 			}
-			else if (c >= '0' && c <= '9')
-			{
+			else if (c >= '0' && c <= '9'){
 				estado = 4;
 				digitos[tamD] = c;
 				digitos[++tamD] = '\0';
 			}
-			else if (c == '"')
-			{
+			else if (c == '"'){
 				estado = 9;
 			}
-			else if (c == '\'')
-			{
+			else if (c == '\''){
 				estado = 11;
 			}
 			else if (c == '>')
@@ -67,29 +70,25 @@ TOKEN analex(FILE *f)
 				tk.codigo = VIRGULA;
 				return tk;
 			}
-			else if (c == '(')
-			{
+			else if (c == '('){
 				estado = 32;
 				tk.cat = SN;
 				tk.codigo = PARENTESEABERTO;
 				return tk;
 			}
-			else if (c == ')')
-			{
+			else if (c == ')'){
 				estado = 33;
 				tk.cat = SN;
 				tk.codigo = PARENTESEFECHADO;
 				return tk;
 			}
-			else if (c == '[')
-			{
+			else if (c == '['){
 				estado = 34;
 				tk.cat = SN;
 				tk.codigo = COLCHETEABERTO;
 				return tk;
 			}
-			else if (c == ']')
-			{
+			else if (c == ']'){
 				estado = 35;
 				tk.cat = SN;
 				tk.codigo = COLCHETEFECHADO;
@@ -97,22 +96,20 @@ TOKEN analex(FILE *f)
 			}
 			else if (c == '&')
 				estado = 36;
-			else if (c == '+')
-			{
+			else if (c == '+'){
 				estado = 39;
 				tk.cat = SN;
 				tk.codigo = ADICAO;
 				return tk;
 			}
-			else if (c == '-')
-			{
+			else if (c == '-'){
 				estado = 40;
 				tk.cat = SN;
 				tk.codigo = SUB;
 				return (tk);
 			}
-			else if (c == '*')
-			{
+			else if (c == '*'){
+		
 				estado = 41;
 				tk.cat = SN;
 				tk.codigo = MULT;
@@ -127,10 +124,24 @@ TOKEN analex(FILE *f)
 			}
 			else if (c == '\n')
 			{
+				estado = 0;
 				linha++;
+			}
+			else if( c == '{'){
+				estado = 48;
+				tk.cat = SN;
+				tk.codigo = CHAVEABERTA;
+				return tk;
+			}
+			else if(c == '}'){
+				estado = 49;
+				tk.cat = SN;
+				tk.codigo = CHAVEFECHADA;
+				return tk;
 			}
 			else
 			{
+				printf(" %c", c);
 				error("CARACTER INVALIDO ENCONTRADO");
 			}
 			break ;
@@ -315,7 +326,7 @@ TOKEN analex(FILE *f)
 			{
 				estado = 19;
 				tk.cat = SN;
-				tk.codigo = MAIORIGUAl;
+				tk.codigo = MAIORIGUAL;
 				return (tk);
 			}
 			else
@@ -332,7 +343,7 @@ TOKEN analex(FILE *f)
 			{
 				estado = 22;
 				tk.cat = SN;
-				tk.codigo = MENORIGUAl;
+				tk.codigo = MENORIGUAL;
 				return (tk);
 			}
 			else
@@ -421,37 +432,34 @@ TOKEN analex(FILE *f)
 			}
 			break ;
 		case 44:
-			if (c == '\n')
-			{
-				linha++;
-				estado = 0;
-			}
+			if(c == '\n') estado = 0;
 			break ;
 		case 45:
 			tk.cat = CT_C;
+			tk.c = 10;
 			return tk;
 		break;
 		case 46:
 			tk.cat = CT_C;
+			tk.c = 0;
 			return tk;
 		break;
 		}
 	}
 }
 
-int	main(void)
+void testeAnalex(char *p)
 {
-	FILE *f;
-	TOKEN token;
-	if ((f = fopen("text.text", "r")) == NULL)
+	if ((f = fopen(p, "r")) == NULL)
 		exit(1);
+	tk.processado = true;
 	while (true)
 	{
-		token = analex(f);
-		switch (token.cat)
+		tk = analex(f);
+		switch (tk.cat)
 		{
 		case SN:
-			switch (token.codigo)
+			switch (tk.codigo)
 			{
 			case ADICAO:
 				printf("<SN, ADICAO>\n");
@@ -472,7 +480,7 @@ int	main(void)
 				printf("<SN, MAIORQUE>\n");
 				break ;
 
-			case MAIORIGUAl:
+			case MAIORIGUAL:
 				printf("<SN, MAIORIGUAL>\n");
 				break ;
 
@@ -480,7 +488,7 @@ int	main(void)
 				printf("<SN, MENORQUE>\n");
 				break ;
 
-			case MENORIGUAl:
+			case MENORIGUAL:
 				printf("<SN, MENORIGUAL>\n");
 				break ;
 
@@ -533,15 +541,11 @@ int	main(void)
 			}
 			break ;
 		case PV_R:
-			switch (token.codigo)
+			switch (tk.codigo)
 			{
 			case CONST:
 				printf("<PR, CONST>\n");
-				break ;
-
-			case PR:
-				printf("<PR, PR>\n");
-				break ;
+				break;
 
 			case INIT:
 				printf("<PR, INIT>\n");
@@ -644,30 +648,42 @@ int	main(void)
 			case GETOUT:
 				printf("<PR, GETOUT>\n");
 				break;
+			case PUTSTR:
+				printf("<PR, PUTSTR>\n");
+				break;
+			case GETSTR:
+				printf("<PR, GETSTR>\n");
+				break;
+			case PROT:
+				printf("<PR>, PROT>\n");
+				break;
+			case DEF:
+				printf("<PR, DEF>\n");
+				break;
 			}
 			break ;
 		case ID:
-			printf("<ID, %s>\n", token.lexema);
+			printf("<ID, %s>\n", tk.lexema);
 			break ;
 		case CT_I:
-			printf("<CT_I, %d>\n", token.valor);
+			printf("<CT_I, %d>\n", tk.valor);
 			break ;
 		case CT_R:
-			printf("<CT_R, %f>\n", token.valor_r);
+			printf("<CT_R, %f>\n", tk.valor_r);
 			break ;
 		case CT_C:
-			printf("<CT_C, %c> \n", token.c);
+			printf("<CT_C, %c> \n", tk.c);
 			break ;
 		case LT:
-			printf("<LT, %s> \n", token.lexema);
+			printf("<LT, %s> \n", tk.lexema);
 			break ;
 		case FIM_ARQ:
-			printf("<FIM_ARQ, EOF>");
+			printf("<FIM_ARQ, EOF>\n");
 			break ;
 		}
-		if (token.cat == FIM_ARQ)
-			break ;
+		if (tk.cat == FIM_ARQ)
+			break;
+		tk.processado = true;
 	}
 	fclose(f);
-	return (0);
 }
