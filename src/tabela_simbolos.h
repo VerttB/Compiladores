@@ -88,4 +88,6 @@ void resetTokenInfo(TokenInfo *);
 void buscaDeclRep(TokenInfo );
 int buscaLexPos(char *);
 void inserirVazios(int, TokenInfo);
+void matarZumbis(int);
+void retirarLocais();
 #endif

@@ -424,8 +424,8 @@
 				tk.processado = true;
 				tk = analex(f);
 			}
-			else if(tk.codigo == ENDI || tk.codigo == ENDW || tk.codigo == ENDP 
-			|| tk.codigo == ENDV || tk.codigo == ELSE || tk.codigo == ELIF) error("Finalização de comando inesperada");
+			else if(tk.cat == PV_R  && (tk.codigo == ENDI || tk.codigo == ENDW || tk.codigo == ENDP 
+			|| tk.codigo == ENDV || tk.codigo == ELSE || tk.codigo == ELIF)) error("Finalização de comando inesperada");
 		
 	}
 
@@ -452,7 +452,6 @@
 			if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
 			tk.processado = true;
 			tk = analex(f);
-			printTokenDados();
 			if(!(tk.cat == SN && tk.codigo == PARENTESEFECHADO)){
 			do{
 				if(tk.cat == SN && tk.codigo == VIRGULA){
@@ -481,6 +480,8 @@
 			}while(tk.cat == SN && tk.codigo == VIRGULA);
 		}
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado");
+			tk.processado = true;
+			tk = analex(f);
 			printFinalizacao("Prot finalizado ");
 		} 
 		else if(tk.codigo == DEF){
@@ -499,9 +500,11 @@
 				inserirNaTabela(tokenInfo);
 				tk.processado = true;
 				tk = analex(f);
+				
 				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 					tokenInfo.escopo = LOCAL;
 					tokenInfo.idcategoria = VAR_LOCAL;
+					
 					declListVar();
 				}
 
@@ -514,11 +517,15 @@
 				}
 			if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
 			tk.processado = true;
+			tk = analex(f);
 			printFinalizacao("Init finalizado ");
 			}
 			else if(tk.cat == ID){
 				printf("Def %s inicializado\n", tk.lexema);
 				int pos;
+				char lexema[32];
+				strncpy(lexema, tk.lexema, sizeof(lexema) - 1);
+				lexema[sizeof(lexema) - 1] = '\0';
 				if((pos = buscaLexPos(tk.lexema)) == -1){
 					strcpy(tokenInfo.lexema, tk.lexema);
 					inserirNaTabela(tokenInfo);
@@ -534,6 +541,7 @@
 							tk.processado = true;
 							tk = analex(f);
 						}
+					tokenInfo.zumbi = VIVO;
 					param();
 					if(tk.cat != ID) error("PROC ID = Identificador Esperado");
 					strcpy(tokenInfo.lexema, tk.lexema);
@@ -568,6 +576,7 @@
 				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 					tokenInfo.escopo = LOCAL;
 					tokenInfo.idcategoria = VAR_LOCAL;
+					tokenInfo.zumbi = NA_ZUMBI;
 					declListVar();
 				}
 				while(tk.cat == PV_R || tk.cat == ID){
@@ -580,8 +589,13 @@
 
 			if(tk.cat != PV_R && tk.codigo != ENDP) error("Finalização de procedimento id esperado");
 				tk.processado = true;
+				tk = analex(f);
 				printFinalizacao("Finalização de DEF ID");
+				printf("LEXEMA DA PALAVRA %s\n", lexema);
+				matarZumbis(buscaLexPos(lexema));
+				retirarLocais();
 			}
+			
 			else error("Inicializador ou identificador esperado");
 		}
 	}
@@ -608,6 +622,7 @@
 			tokenInfo.escopo = LOCAL;
 			tokenInfo.idcategoria = VAR_LOCAL;
 			declDefProc();
+			printTokenDados();
 		}
 	}
 	void testeSint(char *p) {
@@ -616,17 +631,13 @@
 			error("Arquivo de entrada da expressão nao encontrado!\n");
 
 		tk.processado = true;
-
-		while (true) {
-			tk = analex(f);
+		tk = analex(f);
+		prog();
 			if (tk.cat == FIM_ARQ) {
-				printf("\n------------------------------------\n");
-				printf("Fim do arquivo %s", p);
-				printf("\n------------------------------------\n");
-				break;
-			}
-			prog();
-			tk.processado = true;
+			printf("\n------------------------------------\n");
+			printf("Fim do arquivo %s", p);
+			printf("\n------------------------------------\n");
 		}
+			else error("Finalização de Arquivo Inválida\n");
 		fclose(f);
 	}

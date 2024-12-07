@@ -54,7 +54,7 @@ char *T_ehConst[] = {
 
 
 void inserirNaTabela(TokenInfo token){
-   // buscaDeclRep(token.lexema); // Verifica Repetição de lexema
+    buscaDeclRep(token); // Verifica Repetição de lexema
     token.endereco = tabela.topo;
     tabela.tokensTab[tabela.topo] = token;
     tabela.topo++;
@@ -66,12 +66,9 @@ void inserirNaTabela(TokenInfo token){
 void buscaDeclRep(TokenInfo token){
     for(int i = 0;i<tabela.topo;i++){
         if(strcmp(token.lexema, tabela.tokensTab[i].lexema) == 0){
-            if(token.escopo == GLOBAL && tabela.tokensTab[i].escopo == GLOBAL){
-                if(token.idcategoria == tabela.tokensTab[i].idcategoria) error("Multiplas declarações do mesmo tipo");
-            }
-            else{
-                error("Declarações com mesmo nome encontrada");
-            }
+            if(tabela.tokensTab[i].idcategoria == PROC && token.idcategoria == PROC) error("Redeclaração de procedimento encontrada");
+            if(tabela.tokensTab[i].idcategoria == VAR_LOCAL && token.idcategoria == VAR_LOCAL) error("Redaclaração de variável encontrada");
+            if(tabela.tokensTab[i].idcategoria == VAR_GLOBAL && token.idcategoria == VAR_GLOBAL) error("Redeclaração de variável global");
         }
     }
 }
@@ -143,12 +140,34 @@ void resetTokenInfo(TokenInfo *token) {
 
 void inserirVazios(int procPos, TokenInfo tokenInfo){
     TokenInfo aux = tabela.tokensTab[procPos];
-    printf("LEXEMA DO TOKEN %s POS A INSERIR %d", tokenInfo.lexema, procPos);
     if(strcmp(aux.lexema, "") != 0) error("Quantidade de argumentos inválida");
     if(aux.tipo != tokenInfo.tipo) error("Tipo dos argumentos inválido");
     if(aux.array != tokenInfo.array) error("Tipo de variavel|vetor|matriz inválido");
     if(aux.passagem != tokenInfo.passagem) error("Passagem de argumento inválido");
     strcpy(tabela.tokensTab[procPos].lexema, tokenInfo.lexema);
+    tabela.tokensTab[procPos].zumbi = VIVO;
     printarTabela();
+}
 
+void matarZumbis(int procPos){
+    procPos++;
+    printf("Tentando Matar zunmbis da pos %d", procPos);
+    while(1){
+        if(tabela.tokensTab[procPos].idcategoria != PROC_PAR) break;
+        tabela.tokensTab[procPos].zumbi = ZUMBI_;
+        procPos++;
+        printarTabela();
+    }
+}
+
+void retirarLocais(){
+    printf("Tentando matar a local");
+    while(1){
+        if(tabela.tokensTab[tabela.topo-1].idcategoria != VAR_LOCAL){
+            printf("%d",tabela.tokensTab[tabela.topo-1].idcategoria);
+            break;
+        }
+        removerDaTabela();
+        printarTabela();
+    }
 }
