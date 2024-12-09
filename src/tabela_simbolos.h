@@ -59,8 +59,7 @@ typedef struct tokenInfo{
     PASSAGEM passagem;
     ZUMBI zumbi;
     ARRAY array;
-    int DimUm;
-    int DimDois;
+    int arrayDim[2];
     EHCONST ehConst;
     ValConst valConst;
     int endereco;
@@ -86,4 +85,5 @@ int buscaLexPos(char *);
 void inserirVazios(int, TokenInfo);
 void matarZumbis(int);
 void retirarLocais();
+TokenInfo buscaDecl(TokenInfo);
 #endif

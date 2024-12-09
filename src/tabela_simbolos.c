@@ -94,8 +94,8 @@ void printarTabela(){
         printf("│%-8s", T_passagem[aux.passagem]);
         printf("│%-5s", T_zumbi[aux.zumbi]);
         printf("│%-9s", T_array[aux.array]);
-        printf("│%-5d", aux.DimUm);
-        printf("│%-7d", aux.DimDois);
+        printf("│%-5d", aux.arrayDim[0]);
+        printf("│%-7d", aux.arrayDim[1]);
         printf("│%-7s", T_ehConst[aux.ehConst]);
         if(aux.ehConst == CONST_){
             if(aux.tipo == INT_) printf("│%-8d", aux.valConst.int_const);
@@ -172,4 +172,16 @@ void retirarLocais(){
         removerDaTabela();
         printarTabela();
     }
+}
+
+TokenInfo buscaDecl(TokenInfo token){
+    for(int i = 0;i<tabela.topo;i++){
+        if(strcmp(token.lexema, tabela.tokensTab[i].lexema) == 0 && tabela.tokensTab[i].idcategoria == token.idcategoria){
+            if(token.idcategoria == PROC) {
+                if(strcmp(tabela.tokensTab[i+1].lexema, "") == 0 && i+1 >= tabela.topo) error("Função ainda não foi declarada");
+            }
+            return tabela.tokensTab[i];
+        }
+    }
+    error("Declaração não encontrada");
 }

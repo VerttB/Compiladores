@@ -134,12 +134,22 @@
 			}
 			else if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 				int dimensaoArray = 0;
+				int tamArray[2];
 				while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 					dimensaoArray++;
 					if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
 					tk.processado = true;
 					tk = analex(f);
-					if(tk.cat != CT_I && tk.cat != ID){
+					if(tk.cat == CT_I){
+						tokenInfo.arrayDim[dimensaoArray-1] = tk.valor;
+					}
+					else if(tk.cat == ID){
+						TokenInfo aux = buscaDecl(tk.lexema);
+						if(aux.ehConst != CONST_) error("Identificador de tamanho de array deve ser constante");
+						if(aux.tipo != INT_) error("Identificador deve ser do tipo inteiro");
+						tokenInfo.arrayDim[dimensaoArray-1] = aux.valConst.int_const;
+					}
+					else{
 						error("Esperado constante inteira ou identificador \n");
 					}
 					tk.processado = true;
@@ -157,7 +167,6 @@
 			}
 			
 			inserirNaTabela(tokenInfo); //Insere as declarações de variável
-
 		}
 
 		void varInit(){
@@ -204,8 +213,8 @@
 		tokenInfo.passagem = NA_PASSAGEM;
 		tokenInfo.zumbi = NA_ZUMBI;
 		tokenInfo.array = SIMPLES;
-		tokenInfo.DimUm = 0;
-		tokenInfo.DimDois = 0;
+		tokenInfo.arrayDim[0] = 0;
+		tokenInfo.arrayDim[1] = 0;
 		if(tk.cat == PV_R && tk.codigo == CONST){
 			tk.processado = true;
 			tk = analex(f);

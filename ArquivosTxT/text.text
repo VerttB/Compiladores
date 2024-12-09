@@ -1,13 +1,7 @@
-prot abc(int, &char)
-
-def abc(int a, &char d)
-    const char a = 'a', f = 'f'
-endp
-
-
+const int d = 10
 
 def init 
-    int b[2][2] = {1,2,3,4,5}
+   int b[2][a] = {1,2,3,4,5}
    int fat,n,z
    getint n
    if (n <= 1)
