@@ -318,9 +318,10 @@ TOKEN analex(FILE *f)
 			}
 			break ;
 		case 16:
+			ungetc(c,f); //Tratar depois
 			tk.cat = CT_C;
-			return (tk);
-			break ;
+			return tk;
+			break;
 		case 17:
 			if (c == '=')
 			{

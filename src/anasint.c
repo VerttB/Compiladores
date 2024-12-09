@@ -82,7 +82,10 @@
 		if (tk.cat == ID) { 
 			tk.processado = true;
 			tk = analex(f);
+			int dimensaoArray = 0;
 			while(tk.codigo == COLCHETEABERTO){
+				dimensaoArray++;
+				if(dimensaoArray > 2) error("Expr - Matriz de tamanho inválido");
 				tk.processado = true;
 				Expr();
 				if(tk.cat != SN && tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");			
@@ -111,9 +114,6 @@
 	}
 
 	void declVar(){
-		int dimensaoArray = 0;
-		tokenInfo.zumbi = NA_ZUMBI;
-		tokenInfo.array = SIMPLES;
 		if(tk.cat != ID){
 			error("Identificador esperado\n");
 		}
@@ -121,13 +121,19 @@
 			tk.processado = true;
 			tk = analex(f);
 
+		if(tokenInfo.ehConst == CONST_){
+			if(tk.cat != SN && tk.codigo != ATRIBUICAO) error("Variável constante %s não inicializada", tokenInfo.lexema);
+		}
 			if(tk.cat == SN && tk.codigo == ATRIBUICAO){
 				tk.processado = true;
 				tk = analex(f);
+				printf("Antese do INIT");
+				printTokenDados();
 				varInit();
+				printTokenDados();
 			}
 			else if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
-				printf("Inicio da decl de array var\n");
+				int dimensaoArray = 0;
 				while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 					dimensaoArray++;
 					if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
@@ -157,9 +163,11 @@
 		void varInit(){
 			if(tk.cat == CT_C || tk.cat == CT_I || tk.cat == CT_R){
 					if(tokenInfo.ehConst == CONST_){
-						if(tk.cat == CT_C) tokenInfo.valConst.char_const = tk.c;
-						else if(tk.cat == CT_I) tokenInfo.valConst.int_const = tk.valor;
-						else tokenInfo.valConst.float_const = tk.valor_r; //Aceita os reais
+						if(tk.cat == CT_C && tokenInfo.tipo == CHAR_) tokenInfo.valConst.char_const = tk.c;
+						else if(tk.cat == CT_I && tokenInfo.tipo == INT_) tokenInfo.valConst.int_const = tk.valor;
+						else if (tk.cat == CT_R && tokenInfo.tipo == REAL_) tokenInfo.valConst.float_const = tk.valor_r; //Aceita os reais
+						else if(tk.cat == CT_I && tokenInfo.tipo == BOOL_) tokenInfo.valConst.bool_const = tk.valor > 0 ? 1 : 0;
+						else error("Atribuição de constante inválida.");
 					}
 					tk.processado = true;
 					tk = analex(f);
@@ -173,7 +181,7 @@
 		if(tk.cat == SN && tk.codigo == ATRIBUICAO){
 			tk.processado = true;
 			tk = analex(f);
-			if(tk.cat != SN && tk.codigo != COLCHETEABERTO) error("Abertura de colchetes esperado");
+			if(tk.cat != SN && tk.codigo != CHAVEABERTA) error("Abertura de chaves esperado");
 			tk.processado = true;
 			tk = analex(f);
 			varInit();
@@ -185,7 +193,7 @@
 				
 
 			
-			if(tk.cat != SN && tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+			if(tk.cat != SN && tk.codigo != CHAVEFECHADA) error("Fechamento de chaves esperado");
 			tk.processado = true;
 			tk = analex(f);
 		}
@@ -195,6 +203,7 @@
 		tokenInfo.ehConst = NORMAL;
 		tokenInfo.passagem = NA_PASSAGEM;
 		tokenInfo.zumbi = NA_ZUMBI;
+		tokenInfo.array = SIMPLES;
 		tokenInfo.DimUm = 0;
 		tokenInfo.DimDois = 0;
 		if(tk.cat == PV_R && tk.codigo == CONST){
@@ -204,6 +213,7 @@
 		}
 		tipo();
 		declVar();
+		printTokenDados();
 			while(tk.cat == SN && tk.codigo == VIRGULA){
 				tk.processado = true;
 				tk = analex(f);
@@ -431,13 +441,6 @@
 
 	void declDefProc(){
 		if(tk.cat != PV_R) error("Inicializador de Função esperado");
-		tk.processado = true;
-		if(tk.codigo == PROT){
-			printf("Prot incializado e ");
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID) error("Identificador esperado");
-			strcpy(tokenInfo.lexema, tk.lexema);
 			tokenInfo.array = NA_ARRAY;
 			tokenInfo.escopo = GLOBAL;
 			tokenInfo.ehConst = NORMAL;
@@ -445,6 +448,15 @@
 			tokenInfo.passagem = NA_PASSAGEM;
 			tokenInfo.tipo = NA_TIPO;
 			tokenInfo.idcategoria = PROC;
+			tk.processado = true;
+		if(tk.codigo == PROT){
+			printf("Prot incializado e ");
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID) error("Identificador esperado");
+			if(strcmp(tk.lexema,"Init") == 0) error("%s não pode ser utilizado para criação de protótipo", tk.lexema);
+			if(buscaLexPos(tk.lexema) != -1) error("Protótipo %s definido após sua definição", tk.lexema);
+			strcpy(tokenInfo.lexema, tk.lexema);
 			inserirNaTabela(tokenInfo); //Inserção do PROC PROT
 			resetTokenInfo(&tokenInfo);
 			tk.processado = true;
@@ -458,8 +470,6 @@
 					tk.processado = true;
 					tk = analex(f);
 				}
-				tokenInfo.escopo = LOCAL;
-				tokenInfo.ehConst = NORMAL;
 				tokenInfo.zumbi = NA_ZUMBI;
 				param();
 				int dimensaoArray = 0;
@@ -487,13 +497,6 @@
 		else if(tk.codigo == DEF){
 			tk.processado = true;
 			tk = analex(f);
-			tokenInfo.array = NA_ARRAY;
-			tokenInfo.idcategoria = PROC;
-			tokenInfo.ehConst = NORMAL;
-			tokenInfo.passagem = NA_PASSAGEM;
-			tokenInfo.escopo = GLOBAL;
-			tokenInfo.tipo = NA_TIPO;
-			tokenInfo.zumbi = NA_ZUMBI;
 			if(tk.cat == PV_R && tk.codigo == INIT){
 				printf("Init inicializado");
 				strcpy(tokenInfo.lexema, "Init");
@@ -504,7 +507,6 @@
 				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 					tokenInfo.escopo = LOCAL;
 					tokenInfo.idcategoria = VAR_LOCAL;
-					
 					declListVar();
 				}
 
@@ -516,6 +518,7 @@
 					tk.processado = true;
 				}
 			if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
+			retirarLocais();
 			tk.processado = true;
 			tk = analex(f);
 			printFinalizacao("Init finalizado ");
@@ -524,7 +527,7 @@
 				printf("Def %s inicializado\n", tk.lexema);
 				int pos;
 				char lexema[32];
-				strncpy(lexema, tk.lexema, sizeof(lexema) - 1);
+				strncpy(lexema, tk.lexema, sizeof(lexema) - 1); //Faz uma cópia do lexema
 				lexema[sizeof(lexema) - 1] = '\0';
 				if((pos = buscaLexPos(tk.lexema)) == -1){
 					strcpy(tokenInfo.lexema, tk.lexema);
@@ -569,14 +572,14 @@
 						inserirVazios(pos, tokenInfo);
 					}
 					}while(tk.codigo == VIRGULA && tk.cat == SN);
+
+					verificaFaltaParam(buscaLexPos(lexema));
 			}
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("PROC ID - Fechamento de parenteses esperado");
 			tk.processado = true;
 				tk = analex(f);
 				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
-					tokenInfo.escopo = LOCAL;
 					tokenInfo.idcategoria = VAR_LOCAL;
-					tokenInfo.zumbi = NA_ZUMBI;
 					declListVar();
 				}
 				while(tk.cat == PV_R || tk.cat == ID){
@@ -591,7 +594,6 @@
 				tk.processado = true;
 				tk = analex(f);
 				printFinalizacao("Finalização de DEF ID");
-				printf("LEXEMA DA PALAVRA %s\n", lexema);
 				matarZumbis(buscaLexPos(lexema));
 				retirarLocais();
 			}
@@ -602,6 +604,7 @@
 	void param(){
 		tokenInfo.idcategoria = PROC_PAR;
 		tokenInfo.escopo = LOCAL;
+		tokenInfo.ehConst = NORMAL;
 		if(tk.codigo == ENDERECO){
 					tk.processado = true;
 					tk = analex(f);
@@ -620,14 +623,10 @@
 			declListVar();
 		}
 		while(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)){
-			tokenInfo.escopo = LOCAL;
-			tokenInfo.idcategoria = VAR_LOCAL;
 			declDefProc();
-			printTokenDados();
 		}
 	}
 	void testeSint(char *p) {
-		
 		if ((f=fopen(p, "r")) == NULL)
 			error("Arquivo de entrada da expressão nao encontrado!\n");
 

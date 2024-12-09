@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
         printf("\n------------------------------------\n");
         printf("Lendo %s", argv[i+1]);
         printf("\n------------------------------------\n");
-        //testeAnalex(argv[i+1]);
+        testeAnalex(argv[i+1]);
         linha = 1;
         setupConsole();
         testeSint(argv[i+1]);

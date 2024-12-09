@@ -12,14 +12,9 @@ typedef enum{
 typedef enum{
     INT_, REAL_, CHAR_, BOOL_, NA_TIPO
 }TIPO;
-
-
-
 typedef enum{
     VAR_GLOBAL, VAR_LOCAL, PROC, PROC_PAR
 }IDCATEGORIA;
-
-
 
 typedef enum{
     COPIA, REFERENCIA, NA_PASSAGEM
@@ -70,7 +65,7 @@ typedef struct tokenInfo{
     ValConst valConst;
     int endereco;
 }TokenInfo;
-
+//Talves seja interessante criar um campo para descobrir quantos parametros proc tem
 
 typedef struct tabela{
     int topo;
@@ -84,6 +79,7 @@ void printarTabela();
 void inserirNaTabela(TokenInfo );
 void removerDaTabela();
 void limparTabela();
+void verificaFaltaParam(int);
 void resetTokenInfo(TokenInfo *);
 void buscaDeclRep(TokenInfo );
 int buscaLexPos(char *);

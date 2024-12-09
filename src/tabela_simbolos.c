@@ -58,7 +58,6 @@ void inserirNaTabela(TokenInfo token){
     token.endereco = tabela.topo;
     tabela.tokensTab[tabela.topo] = token;
     tabela.topo++;
-    resetTokenInfo(&token);
     printarTabela();
     
 }
@@ -81,7 +80,6 @@ int buscaLexPos(char *lexema){
 }
 void printarTabela(){
     TokenInfo aux;
-    printf(" tamanho = %d\n", tabela.topo);
     printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬─────────┬\n");
     printf("│\t\tLexema\t\t│tipo│escopo│passagem│zumbi│  array  │dimUm│dimDois│ehConst│valConst│endereço│categoria│\n");
     printf("├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
@@ -128,7 +126,6 @@ void printarTabela(){
     }
 }
  void limparTabela() {
-    printf("Limpando tabela");
     memset(tabela.tokensTab, 0, sizeof(tabela.tokensTab)); // Preenche com zeros
     tabela.topo = 0; // Reseta o topo
 }
@@ -140,18 +137,27 @@ void resetTokenInfo(TokenInfo *token) {
 
 void inserirVazios(int procPos, TokenInfo tokenInfo){
     TokenInfo aux = tabela.tokensTab[procPos];
+    if(aux.idcategoria != tokenInfo.idcategoria) error("Quantidade de parâmetros inválida");
     if(strcmp(aux.lexema, "") != 0) error("Quantidade de argumentos inválida");
-    if(aux.tipo != tokenInfo.tipo) error("Tipo dos argumentos inválido");
-    if(aux.array != tokenInfo.array) error("Tipo de variavel|vetor|matriz inválido");
-    if(aux.passagem != tokenInfo.passagem) error("Passagem de argumento inválido");
+    if(aux.tipo != tokenInfo.tipo) error("Tipo dos argumentos inválido. Esperado: %s, recebido: %s", T_tipo[aux.tipo], T_tipo[tokenInfo.tipo]);
+    if(aux.array != tokenInfo.array) error("Tipo de argumento incompatível. Esperado: %s, recebido: %s", T_array[aux.array], T_array[tokenInfo.array]);
+    if(aux.passagem != tokenInfo.passagem) error("Método de passagem de argumento incompatível. Esperado: %s, recebido: %s",T_passagem[aux.passagem], T_passagem[tokenInfo.passagem]);
     strcpy(tabela.tokensTab[procPos].lexema, tokenInfo.lexema);
     tabela.tokensTab[procPos].zumbi = VIVO;
     printarTabela();
 }
 
+void verificaFaltaParam(int procPos){
+    procPos++;
+    while(1){
+        if(tabela.tokensTab[procPos].idcategoria != PROC_PAR) break;
+        if(strcmp(tabela.tokensTab[procPos].lexema, "") == 0) error("Quantidade de argumentos inválida");
+        procPos++;
+    }
+}
+
 void matarZumbis(int procPos){
     procPos++;
-    printf("Tentando Matar zunmbis da pos %d", procPos);
     while(1){
         if(tabela.tokensTab[procPos].idcategoria != PROC_PAR) break;
         tabela.tokensTab[procPos].zumbi = ZUMBI_;
@@ -161,12 +167,8 @@ void matarZumbis(int procPos){
 }
 
 void retirarLocais(){
-    printf("Tentando matar a local");
     while(1){
-        if(tabela.tokensTab[tabela.topo-1].idcategoria != VAR_LOCAL){
-            printf("%d",tabela.tokensTab[tabela.topo-1].idcategoria);
-            break;
-        }
+        if(tabela.tokensTab[tabela.topo-1].idcategoria != VAR_LOCAL) break;
         removerDaTabela();
         printarTabela();
     }

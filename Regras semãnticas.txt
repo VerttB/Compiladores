@@ -1,0 +1,4 @@
+DECLARAÇÕES
+
+1 - Declarações de ID globais e locais - feito
+2 - Atribuição de constante deve ser o mesmo de sua declaração - Feito
