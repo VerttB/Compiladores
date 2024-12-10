@@ -85,5 +85,5 @@ int buscaLexPos(char *);
 void inserirVazios(int, TokenInfo);
 void matarZumbis(int);
 void retirarLocais();
-TokenInfo buscaDecl(TokenInfo);
+TokenInfo buscaDecl(char *);
 #endif

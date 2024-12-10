@@ -127,10 +127,8 @@
 			if(tk.cat == SN && tk.codigo == ATRIBUICAO){
 				tk.processado = true;
 				tk = analex(f);
-				printf("Antese do INIT");
-				printTokenDados();
+
 				varInit();
-				printTokenDados();
 			}
 			else if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 				int dimensaoArray = 0;
@@ -222,7 +220,6 @@
 		}
 		tipo();
 		declVar();
-		printTokenDados();
 			while(tk.cat == SN && tk.codigo == VIRGULA){
 				tk.processado = true;
 				tk = analex(f);

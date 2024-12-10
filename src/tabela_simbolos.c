@@ -73,13 +73,14 @@ void buscaDeclRep(TokenInfo token){
 }
 
 int buscaLexPos(char *lexema){
-     for(int i = 0;i<tabela.topo;i++){
+     for(int i = tabela.topo-1;i >= 0;i--){
         if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0) return i;
     }
     return -1;
 }
 void printarTabela(){
     TokenInfo aux;
+    printf("\n");
     printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬─────────┬\n");
     printf("│\t\tLexema\t\t│tipo│escopo│passagem│zumbi│  array  │dimUm│dimDois│ehConst│valConst│endereço│categoria│\n");
     printf("├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
@@ -126,8 +127,8 @@ void printarTabela(){
     }
 }
  void limparTabela() {
-    memset(tabela.tokensTab, 0, sizeof(tabela.tokensTab)); // Preenche com zeros
-    tabela.topo = 0; // Reseta o topo
+    memset(tabela.tokensTab, 0, sizeof(tabela.tokensTab));
+    tabela.topo = 0; 
 }
 
 void resetTokenInfo(TokenInfo *token) {
@@ -174,14 +175,8 @@ void retirarLocais(){
     }
 }
 
-TokenInfo buscaDecl(TokenInfo token){
-    for(int i = 0;i<tabela.topo;i++){
-        if(strcmp(token.lexema, tabela.tokensTab[i].lexema) == 0 && tabela.tokensTab[i].idcategoria == token.idcategoria){
-            if(token.idcategoria == PROC) {
-                if(strcmp(tabela.tokensTab[i+1].lexema, "") == 0 && i+1 >= tabela.topo) error("Função ainda não foi declarada");
-            }
-            return tabela.tokensTab[i];
-        }
-    }
-    error("Declaração não encontrada");
+TokenInfo buscaDecl(char *lexema){
+    int pos = buscaLexPos(lexema);
+    if(pos < 0)  error("Declaração não encontrada");
+    return tabela.tokensTab[pos];
 }

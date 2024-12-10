@@ -1,7 +1,8 @@
 const int d = 10
-
+const int b = 20, a = 30
 def init 
-   int b[2][a] = {1,2,3,4,5}
+   const int b = 2
+   int b[d][a] = {1,2,3,4,5}
    int fat,n,z
    getint n
    if (n <= 1)
