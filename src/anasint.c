@@ -143,6 +143,7 @@
 					}
 					else if(tk.cat == ID){
 						TokenInfo aux = buscaDecl(tk.lexema);
+						
 						if(aux.ehConst != CONST_) error("Identificador de tamanho de array deve ser constante");
 						if(aux.tipo != INT_) error("Identificador deve ser do tipo inteiro");
 						tokenInfo.arrayDim[dimensaoArray-1] = aux.valConst.int_const;
@@ -562,7 +563,7 @@
 						if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
 						tk.processado = true;
 						tk = analex(f);
-						if(tk.cat != ID && tk.cat != CT_I) error("PROC ID - COnstante inteira ou identificador esperado");
+						if(tk.cat != ID && tk.cat != CT_I) error("PROC ID - Constante inteira ou identificador esperado");
 						tk.processado = true;
 						tk = analex(f);
 						if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
@@ -574,7 +575,6 @@
 					else tokenInfo.array = SIMPLES;
 					if(pos == -1) inserirNaTabela(tokenInfo);
 					else{
-						pos++;
 						inserirVazios(pos, tokenInfo);
 					}
 					}while(tk.codigo == VIRGULA && tk.cat == SN);

@@ -65,16 +65,17 @@ void inserirNaTabela(TokenInfo token){
 void buscaDeclRep(TokenInfo token){
     for(int i = 0;i<tabela.topo;i++){
         if(strcmp(token.lexema, tabela.tokensTab[i].lexema) == 0){
-            if(tabela.tokensTab[i].idcategoria == PROC && token.idcategoria == PROC) error("Redeclaração de procedimento encontrada");
-            if(tabela.tokensTab[i].idcategoria == VAR_LOCAL && token.idcategoria == VAR_LOCAL) error("Redaclaração de variável encontrada");
-            if(tabela.tokensTab[i].idcategoria == VAR_GLOBAL && token.idcategoria == VAR_GLOBAL) error("Redeclaração de variável global");
+            if(tabela.tokensTab[i].idcategoria == PROC && token.idcategoria == PROC) error("Redeclaração de procedimento %s encontrada", tabela.tokensTab[i].lexema);
+            if(tabela.tokensTab[i].idcategoria == VAR_LOCAL && token.idcategoria == VAR_LOCAL) error("Redaclaração de variável %s encontrada", tabela.tokensTab[i].lexema);
+            if(tabela.tokensTab[i].idcategoria == VAR_GLOBAL && token.idcategoria == VAR_GLOBAL) error("Redeclaração de variável global %s", tabela.tokensTab[i].lexema);
+            if(tabela.tokensTab[i].idcategoria == PROC_PAR && token.idcategoria == PROC_PAR && strcmp(token.lexema, "") != 0) error("Redeclaração de parâmetro %s encontrada", tabela.tokensTab[i].lexema);
         }
     }
 }
 
 int buscaLexPos(char *lexema){
      for(int i = tabela.topo-1;i >= 0;i--){
-        if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0) return i;
+        if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0 && tabela.tokensTab[i].idcategoria != PROC_PAR) return i;
     }
     return -1;
 }
@@ -137,14 +138,24 @@ void resetTokenInfo(TokenInfo *token) {
 }
 
 void inserirVazios(int procPos, TokenInfo tokenInfo){
-    TokenInfo aux = tabela.tokensTab[procPos];
-    if(aux.idcategoria != tokenInfo.idcategoria) error("Quantidade de parâmetros inválida");
+    TokenInfo aux;
+    int auxNum;
+    procPos++;
+    printf("Posição --%d--", procPos);
+    for(int i = procPos; i < tabela.topo; i++){
+        if(strcmp(tokenInfo.lexema, tabela.tokensTab[i].lexema) == 0)  error("Redeclaração de parâmetro %s encontrada", tokenInfo.lexema);
+        if(strcmp( tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){aux = tabela.tokensTab[i]; auxNum = i; break;}
+        if(tabela.tokensTab[i].idcategoria != PROC_PAR) error("Quantidade de parâmetros inválida");
+    }
+
+    //if(aux.idcategoria != tokenInfo.idcategoria) error("Quantidade de parâmetros inválida");
+    printf("Lexema da aux ---%s---", aux.lexema);
     if(strcmp(aux.lexema, "") != 0) error("Quantidade de argumentos inválida");
     if(aux.tipo != tokenInfo.tipo) error("Tipo dos argumentos inválido. Esperado: %s, recebido: %s", T_tipo[aux.tipo], T_tipo[tokenInfo.tipo]);
     if(aux.array != tokenInfo.array) error("Tipo de argumento incompatível. Esperado: %s, recebido: %s", T_array[aux.array], T_array[tokenInfo.array]);
     if(aux.passagem != tokenInfo.passagem) error("Método de passagem de argumento incompatível. Esperado: %s, recebido: %s",T_passagem[aux.passagem], T_passagem[tokenInfo.passagem]);
-    strcpy(tabela.tokensTab[procPos].lexema, tokenInfo.lexema);
-    tabela.tokensTab[procPos].zumbi = VIVO;
+    strcpy(tabela.tokensTab[auxNum].lexema, tokenInfo.lexema);
+    tabela.tokensTab[auxNum].zumbi = VIVO;
     printarTabela();
 }
 
