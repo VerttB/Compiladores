@@ -74,7 +74,7 @@ typedef struct tabela{
 extern int topo;
 extern Tabela tabela;
 
-void printarTabela();
+void printarTabela(int);
 void inserirNaTabela(TokenInfo );
 void removerDaTabela();
 void limparTabela();

@@ -58,7 +58,7 @@ void inserirNaTabela(TokenInfo token){
     token.endereco = tabela.topo;
     tabela.tokensTab[tabela.topo] = token;
     tabela.topo++;
-    printarTabela();
+    printarTabela(-1);
     
 }
 
@@ -68,7 +68,6 @@ void buscaDeclRep(TokenInfo token){
             if(tabela.tokensTab[i].idcategoria == PROC && token.idcategoria == PROC) error("Redeclaração de procedimento %s encontrada", tabela.tokensTab[i].lexema);
             if(tabela.tokensTab[i].idcategoria == VAR_LOCAL && token.idcategoria == VAR_LOCAL) error("Redaclaração de variável %s encontrada", tabela.tokensTab[i].lexema);
             if(tabela.tokensTab[i].idcategoria == VAR_GLOBAL && token.idcategoria == VAR_GLOBAL) error("Redeclaração de variável global %s", tabela.tokensTab[i].lexema);
-            if(tabela.tokensTab[i].idcategoria == PROC_PAR && token.idcategoria == PROC_PAR && strcmp(token.lexema, "") != 0) error("Redeclaração de parâmetro %s encontrada", tabela.tokensTab[i].lexema);
         }
     }
 }
@@ -79,7 +78,7 @@ int buscaLexPos(char *lexema){
     }
     return -1;
 }
-void printarTabela(){
+void printarTabela(int pos){
     TokenInfo aux;
     printf("\n");
     printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬─────────┬\n");
@@ -88,7 +87,8 @@ void printarTabela(){
 
     for(int i = 0 ; i < tabela.topo;i++){
         printf("│");
-        if(i == tabela.topo - 1) printf("%s", _GREEN_);
+        if(i == tabela.topo - 1 && pos == -1) printf("%s", _GREEN_);
+        else if(i == pos && pos != -1) printf("%s", _GREEN_);
         aux = tabela.tokensTab[i];
         printf("%-31s",aux.lexema);
         printf("│%-4s", T_tipo[aux.tipo]);
@@ -156,7 +156,7 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
     if(aux.passagem != tokenInfo.passagem) error("Método de passagem de argumento incompatível. Esperado: %s, recebido: %s",T_passagem[aux.passagem], T_passagem[tokenInfo.passagem]);
     strcpy(tabela.tokensTab[auxNum].lexema, tokenInfo.lexema);
     tabela.tokensTab[auxNum].zumbi = VIVO;
-    printarTabela();
+    printarTabela(auxNum);
 }
 
 void verificaFaltaParam(int procPos){
@@ -173,8 +173,8 @@ void matarZumbis(int procPos){
     while(1){
         if(tabela.tokensTab[procPos].idcategoria != PROC_PAR) break;
         tabela.tokensTab[procPos].zumbi = ZUMBI_;
+        printarTabela(procPos);
         procPos++;
-        printarTabela();
     }
 }
 
@@ -182,7 +182,7 @@ void retirarLocais(){
     while(1){
         if(tabela.tokensTab[tabela.topo-1].idcategoria != VAR_LOCAL) break;
         removerDaTabela();
-        printarTabela();
+        printarTabela(-1);
     }
 }
 

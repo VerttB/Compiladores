@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
         linha = 1;
         setupConsole();
         testeSint(argv[i+1]);
-        printarTabela();
+        printarTabela(-1);
         limparTabela();
         restoreConsole();
     }
