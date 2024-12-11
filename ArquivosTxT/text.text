@@ -1,9 +1,9 @@
 const int d = 10
 const int b = 20, a = 30
 
-prot teste(int,&int)
+prot teste(int)
 
-def teste(int a,&int c)
+def teste(int a, int b)
     const int z = 20
 endp
 

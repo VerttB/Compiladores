@@ -81,7 +81,7 @@ int buscaLexPos(char *lexema){
 void printarTabela(int pos){
     TokenInfo aux;
     printf("\n");
-    printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬─────────┬\n");
+    printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬─────────┐\n");
     printf("│\t\tLexema\t\t│tipo│escopo│passagem│zumbi│  array  │dimUm│dimDois│ehConst│valConst│endereço│categoria│\n");
     printf("├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
 
@@ -141,15 +141,13 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
     TokenInfo aux;
     int auxNum;
     procPos++;
-    printf("Posição --%d--", procPos);
     for(int i = procPos; i < tabela.topo; i++){
         if(strcmp(tokenInfo.lexema, tabela.tokensTab[i].lexema) == 0)  error("Redeclaração de parâmetro %s encontrada", tokenInfo.lexema);
         if(strcmp( tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){aux = tabela.tokensTab[i]; auxNum = i; break;}
         if(tabela.tokensTab[i].idcategoria != PROC_PAR) error("Quantidade de parâmetros inválida");
     }
-
+    if(auxNum == 0) error("Quantidade de argumentos inválida");
     //if(aux.idcategoria != tokenInfo.idcategoria) error("Quantidade de parâmetros inválida");
-    printf("Lexema da aux ---%s---", aux.lexema);
     if(strcmp(aux.lexema, "") != 0) error("Quantidade de argumentos inválida");
     if(aux.tipo != tokenInfo.tipo) error("Tipo dos argumentos inválido. Esperado: %s, recebido: %s", T_tipo[aux.tipo], T_tipo[tokenInfo.tipo]);
     if(aux.array != tokenInfo.array) error("Tipo de argumento incompatível. Esperado: %s, recebido: %s", T_array[aux.array], T_array[tokenInfo.array]);
@@ -162,6 +160,7 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
 void verificaFaltaParam(int procPos){
     procPos++;
     while(1){
+        if(procPos >= tabela.topo) break;
         if(tabela.tokensTab[procPos].idcategoria != PROC_PAR) break;
         if(strcmp(tabela.tokensTab[procPos].lexema, "") == 0) error("Quantidade de argumentos inválida");
         procPos++;

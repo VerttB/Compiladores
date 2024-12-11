@@ -573,7 +573,7 @@
 					if(dimensaoArray == 1) tokenInfo.array = VETOR;
 					else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
 					else tokenInfo.array = SIMPLES;
-					if(pos == -1) inserirNaTabela(tokenInfo);
+					if(pos == -1) inserirNaTabela(tokenInfo); //Se a pos é -1 quer dizer que proc foi a ultima coisa inserida
 					else{
 						inserirVazios(pos, tokenInfo);
 					}
