@@ -13,7 +13,7 @@ typedef enum{
     INT_, REAL_, CHAR_, BOOL_, NA_TIPO
 }TIPO;
 typedef enum{
-    VAR_GLOBAL, VAR_LOCAL, PROC, PROC_PAR
+    VAR_GLOBAL, VAR_LOCAL, PROC, PROC_PAR,PROT_
 }IDCATEGORIA;
 
 typedef enum{

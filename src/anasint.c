@@ -143,7 +143,6 @@
 					}
 					else if(tk.cat == ID){
 						TokenInfo aux = buscaDecl(tk.lexema);
-						
 						if(aux.ehConst != CONST_) error("Identificador de tamanho de array deve ser constante");
 						if(aux.tipo != INT_) error("Identificador deve ser do tipo inteiro");
 						tokenInfo.arrayDim[dimensaoArray-1] = aux.valConst.int_const;
@@ -457,6 +456,7 @@
 			tokenInfo.idcategoria = PROC;
 			tk.processado = true;
 		if(tk.codigo == PROT){
+			tokenInfo.idcategoria = PROT_;
 			printf("Prot incializado e ");
 			tk.processado = true;
 			tk = analex(f);
@@ -502,6 +502,7 @@
 			printFinalizacao("Prot finalizado ");
 		} 
 		else if(tk.codigo == DEF){
+			tokenInfo.idcategoria = PROC;
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat == PV_R && tk.codigo == INIT){

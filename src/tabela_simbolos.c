@@ -25,6 +25,7 @@ char *T_IdCategoria[] = {
     [VAR_LOCAL] = "Var_L",
     [PROC] = "Proc",
     [PROC_PAR] = "Param",
+    [PROT_] = "Prot"
 };
 
 char *T_passagem[] = {
@@ -140,6 +141,7 @@ void resetTokenInfo(TokenInfo *token) {
 void inserirVazios(int procPos, TokenInfo tokenInfo){
     TokenInfo aux;
     int auxNum;
+    tabela.tokensTab[procPos].idcategoria = PROC;
     procPos++;
     for(int i = procPos; i < tabela.topo; i++){
         if(strcmp(tokenInfo.lexema, tabela.tokensTab[i].lexema) == 0)  error("Redeclaração de parâmetro %s encontrada", tokenInfo.lexema);
@@ -158,6 +160,7 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
 }
 
 void verificaFaltaParam(int procPos){
+    
     procPos++;
     while(1){
         if(procPos >= tabela.topo) break;
