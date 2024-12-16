@@ -69,6 +69,7 @@ void buscaDeclRep(TokenInfo token){
             if(tabela.tokensTab[i].idcategoria == PROC && token.idcategoria == PROC) error("Redeclaração de procedimento %s encontrada", tabela.tokensTab[i].lexema);
             if(tabela.tokensTab[i].idcategoria == VAR_LOCAL && token.idcategoria == VAR_LOCAL) error("Redaclaração de variável %s encontrada", tabela.tokensTab[i].lexema);
             if(tabela.tokensTab[i].idcategoria == VAR_GLOBAL && token.idcategoria == VAR_GLOBAL) error("Redeclaração de variável global %s", tabela.tokensTab[i].lexema);
+            if(tabela.tokensTab[i].zumbi == VIVO && strcmp(token.lexema, tabela.tokensTab[i].lexema) == 0) error("Redeclaração de parâmetro %s", tabela.tokensTab[i].lexema);
         }
     }
 }

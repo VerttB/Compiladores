@@ -1,14 +1,6 @@
 const int d = 10
 const int b = 20, a = 30
 
-prot teste(int)
-
-def teste(int a, int b)
-    const int z = 20
-endp
-
-
-
 def init 
    const int b = 2
    int c[d][a] = {1,2,3,4,5}
@@ -29,3 +21,10 @@ def init
     a = b[2] + 3
 endp
 
+
+prot teste(int[])
+
+def teste(int a[20])
+    const int z = 20
+    int d,f
+endp

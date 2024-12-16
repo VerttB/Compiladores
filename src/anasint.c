@@ -161,7 +161,7 @@
 					arrayInit();
 					if(dimensaoArray == 1) tokenInfo.array = VETOR;
 					else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
-					else tokenInfo.array = SIMPLES;	
+					else tokenInfo.array = SIMPLES;	 
 			}
 			
 			inserirNaTabela(tokenInfo); //Insere as declarações de variável
@@ -565,6 +565,7 @@
 						tk.processado = true;
 						tk = analex(f);
 						if(tk.cat != ID && tk.cat != CT_I) error("PROC ID - Constante inteira ou identificador esperado");
+						if(strcmp(tk.lexema, tokenInfo.lexema) == 0) error("Parâmetro não pode ser utilizado para tamanho de seu próprio vetor/matriz");
 						tk.processado = true;
 						tk = analex(f);
 						if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");

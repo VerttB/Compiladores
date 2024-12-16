@@ -6,9 +6,6 @@
 typedef enum{
     GLOBAL, LOCAL
 }ESCOPO;
-
-
-
 typedef enum{
     INT_, REAL_, CHAR_, BOOL_, NA_TIPO
 }TIPO;
@@ -20,25 +17,17 @@ typedef enum{
     COPIA, REFERENCIA, NA_PASSAGEM
 }PASSAGEM;
 
-
-
 typedef enum{
     VIVO, ZUMBI_, NA_ZUMBI
 }ZUMBI;
-
-
 
 typedef enum{
     SIMPLES, VETOR, MATRIZ, NA_ARRAY
 }ARRAY;
 
-
-
 typedef enum{
     CONST_, NORMAL
 }EHCONST;
-
-
 
 typedef struct valconst{
     union 

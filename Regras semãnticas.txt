@@ -1,6 +1,0 @@
-DECLARAÇÕES
-
-1 - Declarações de ID globais e locais - Feito
-2 - Atribuição de constante deve ser o mesmo de sua declaração - Feito
-3 - Aceitar somente inteiros e IDs inteiros no tamanho de vetores - Feito
-4 - Quantidade de parametros em Declarações	de função - Feito
