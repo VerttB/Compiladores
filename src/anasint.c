@@ -29,6 +29,14 @@
 		}
 		tk.processado = true;
 		tk = analex(f);
+		while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
+			tk.processado = true;
+			tk = analex(f);
+			Expr();
+			if(tk.cat != SN && tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+			tk.processado = true;
+			tk = analex(f);
+		}
 		if (tk.cat != SN || tk.codigo != ATRIBUICAO) {
 			error("Sinal de atribuição esperado!\n");
 		}
