@@ -1,0 +1,42 @@
+int index = 0
+const int maxTamTarefas = 1024, maxLetters = 32
+char tarefas[maxTamTarefas][maxTamTarefas]
+
+
+prot adicionarTarefa(char[])
+prot listarTarefas()
+
+def adicionarTarefa(char t[maxLetters])
+
+    tarefas[index] = t
+    index = index + 1
+endp
+
+def listarTarefas()
+    int index = 0
+    while(1)
+    if(tarefas[index] == ' ') 
+        getout
+    endi
+    putchar tarefas
+    index = index + 1
+    endw
+endp
+
+def init
+    char tarefa[maxLetters]
+    while(1)
+        putstr "Digite 0 para sair"
+        putchar '\n'
+        putstr "Diga a tarefa"
+        getstr tarefa
+    
+        if(tarefa == ' ')
+            putstr "A tarefa não deve ser vazia"
+        elif(tarefa == 0) 
+            getout
+        endi
+        do adicionarTarefa(tarefa)
+    endw
+    do listarTarefas()
+endp
