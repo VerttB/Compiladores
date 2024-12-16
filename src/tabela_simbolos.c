@@ -141,7 +141,10 @@ void resetTokenInfo(TokenInfo *token) {
 void inserirVazios(int procPos, TokenInfo tokenInfo){
     TokenInfo aux;
     int auxNum;
+    if(tabela.tokensTab[procPos].idcategoria != PROC){
     tabela.tokensTab[procPos].idcategoria = PROC;
+    printarTabela(procPos);
+    }
     procPos++;
     for(int i = procPos; i < tabela.topo; i++){
         if(strcmp(tokenInfo.lexema, tabela.tokensTab[i].lexema) == 0)  error("Redeclaração de parâmetro %s encontrada", tokenInfo.lexema);

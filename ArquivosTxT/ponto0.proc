@@ -1,6 +1,8 @@
 
 int a,b
-
+const int d = 20,c = 30
+const bool bol = 2
+const char texto = 'e'
 prot subtrair(&int [][], int, int)
 
 def somar(int r, int a, int b) 
