@@ -23,3 +23,5 @@ void printTokenDados(){
 void printFinalizacao(char msg[]){
     printf("%s na linha %d\n", msg, linha);
 }
+
+

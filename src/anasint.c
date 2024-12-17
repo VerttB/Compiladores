@@ -146,18 +146,7 @@
 					if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
 					tk.processado = true;
 					tk = analex(f);
-					if(tk.cat == CT_I){
-						tokenInfo.arrayDim[dimensaoArray-1] = tk.valor;
-					}
-					else if(tk.cat == ID){
-						TokenInfo aux = buscaDecl(tk.lexema);
-						if(aux.ehConst != CONST_) error("Identificador de tamanho de array deve ser constante");
-						if(aux.tipo != INT_) error("Identificador deve ser do tipo inteiro");
-						tokenInfo.arrayDim[dimensaoArray-1] = aux.valConst.int_const;
-					}
-					else{
-						error("Esperado constante inteira ou identificador \n");
-					}
+					insereDimensaoArray(dimensaoArray);
 					tk.processado = true;
 					tk = analex(f);
 					if(tk.cat != SN && tk.codigo != COLCHETEFECHADO){
@@ -233,7 +222,7 @@
 				tk = analex(f);
 				declVar();
 			}
-		
+		resetTokenInfo(&tokenInfo);
 	}
 	void tipo(){
 		if(tk.cat == PV_R && (tk.codigo == INT || tk.codigo == REAL || tk.codigo == BOOL || tk.codigo == CHAR)){
@@ -572,7 +561,7 @@
 						if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
 						tk.processado = true;
 						tk = analex(f);
-						if(tk.cat != ID && tk.cat != CT_I) error("PROC ID - Constante inteira ou identificador esperado");
+						insereDimensaoArray(dimensaoArray);
 						if(strcmp(tk.lexema, tokenInfo.lexema) == 0) error("Parâmetro não pode ser utilizado para tamanho de seu próprio vetor/matriz");
 						tk.processado = true;
 						tk = analex(f);
@@ -629,6 +618,22 @@
 		else tokenInfo.passagem = COPIA;
 		tipo();
 				
+	}
+
+	void insereDimensaoArray(int dimensaoArray){
+		if(tk.cat == CT_I){
+			tokenInfo.arrayDim[dimensaoArray-1] = tk.valor;
+		}
+		else if(tk.cat == ID){
+					TokenInfo aux = buscaDecl(tk.lexema);
+					if(aux.ehConst != CONST_) error("Identificador de tamanho de array deve ser constante");
+					if(aux.tipo != INT_) error("Identificador deve ser do tipo inteiro");
+					tokenInfo.arrayDim[dimensaoArray-1] = aux.valConst.int_const;
+					printf("Inserindo %s, dimensao %d", tk.lexema, dimensaoArray);
+				}
+			else{
+				error("Esperado constante inteira ou identificador \n");
+			}
 	}
 
 	void prog(){

@@ -29,6 +29,9 @@ void cmd();
 void declVar();
 void declListVar();
 void tipo();
+
+
 void varInit(); //Trata das inicializações intcon |realcon | charcon | stringcon
 void arrayInit(); //Trata das inicializações de array = {}
+void insereDimensaoArray(int);
 #endif

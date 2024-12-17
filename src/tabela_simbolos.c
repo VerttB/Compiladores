@@ -155,8 +155,11 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
     if(aux.tipo != tokenInfo.tipo) error("Tipo dos argumentos inválido. Esperado: %s, recebido: %s", T_tipo[aux.tipo], T_tipo[tokenInfo.tipo]);
     if(aux.array != tokenInfo.array) error("Tipo de argumento incompatível. Esperado: %s, recebido: %s", T_array[aux.array], T_array[tokenInfo.array]);
     if(aux.passagem != tokenInfo.passagem) error("Método de passagem de argumento incompatível. Esperado: %s, recebido: %s",T_passagem[aux.passagem], T_passagem[tokenInfo.passagem]);
-    strcpy(tabela.tokensTab[auxNum].lexema, tokenInfo.lexema);
-    tabela.tokensTab[auxNum].zumbi = VIVO;
+    //strcpy(tabela.tokensTab[auxNum].lexema, tokenInfo.lexema);
+   // tabela.tokensTab[auxNum].zumbi = VIVO;
+   // tabela.tokensTab[auxNum].
+    tokenInfo.zumbi = VIVO;
+    tabela.tokensTab[auxNum] = tokenInfo;
     printarTabela(auxNum);
 }
 
