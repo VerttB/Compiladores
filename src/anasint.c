@@ -156,9 +156,7 @@
 					tk = analex(f);
 					}
 					arrayInit();
-					if(dimensaoArray == 1) tokenInfo.array = VETOR;
-					else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
-					else tokenInfo.array = SIMPLES;	 
+					defineTipoArray(dimensaoArray);
 			}
 			
 			inserirNaTabela(tokenInfo); //Insere as declarações de variável
@@ -486,10 +484,7 @@
 					tk.processado = true;
 					tk = analex(f);
 				}
-
-			if(dimensaoArray == 1) tokenInfo.array = VETOR;
-			else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
-			else tokenInfo.array = SIMPLES;
+			defineTipoArray(dimensaoArray);
 			inserirNaTabela(tokenInfo);
 			}while(tk.cat == SN && tk.codigo == VIRGULA);
 		}
@@ -569,9 +564,7 @@
 						tk.processado = true;
 						tk = analex(f);
 					}
-					if(dimensaoArray == 1) tokenInfo.array = VETOR;
-					else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
-					else tokenInfo.array = SIMPLES;
+					
 					if(pos == -1) inserirNaTabela(tokenInfo); //Se a pos é -1 quer dizer que proc foi a ultima coisa inserida
 					else{
 						inserirVazios(pos, tokenInfo);
@@ -634,6 +627,12 @@
 			else{
 				error("Esperado constante inteira ou identificador \n");
 			}
+	}
+
+	void defineTipoArray(int dimensaoArray){
+		if(dimensaoArray == 1) tokenInfo.array = VETOR;
+		else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
+		else tokenInfo.array = SIMPLES;
 	}
 
 	void prog(){
