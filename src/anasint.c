@@ -220,7 +220,6 @@
 				tk = analex(f);
 				declVar();
 			}
-		resetTokenInfo(&tokenInfo);
 	}
 	void tipo(){
 		if(tk.cat == PV_R && (tk.codigo == INT || tk.codigo == REAL || tk.codigo == BOOL || tk.codigo == CHAR)){
@@ -485,6 +484,7 @@
 					tk = analex(f);
 				}
 			defineTipoArray(dimensaoArray);
+			printf("%d ARRAy----------A_-----\n", tokenInfo.array);
 			inserirNaTabela(tokenInfo);
 			}while(tk.cat == SN && tk.codigo == VIRGULA);
 		}
@@ -564,7 +564,7 @@
 						tk.processado = true;
 						tk = analex(f);
 					}
-					
+					defineTipoArray(dimensaoArray);
 					if(pos == -1) inserirNaTabela(tokenInfo); //Se a pos é -1 quer dizer que proc foi a ultima coisa inserida
 					else{
 						inserirVazios(pos, tokenInfo);
@@ -622,7 +622,6 @@
 					if(aux.ehConst != CONST_) error("Identificador de tamanho de array deve ser constante");
 					if(aux.tipo != INT_) error("Identificador deve ser do tipo inteiro");
 					tokenInfo.arrayDim[dimensaoArray-1] = aux.valConst.int_const;
-					printf("Inserindo %s, dimensao %d", tk.lexema, dimensaoArray);
 				}
 			else{
 				error("Esperado constante inteira ou identificador \n");
@@ -630,6 +629,7 @@
 	}
 
 	void defineTipoArray(int dimensaoArray){
+		printf("Dimensão %d\n");
 		if(dimensaoArray == 1) tokenInfo.array = VETOR;
 		else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
 		else tokenInfo.array = SIMPLES;
