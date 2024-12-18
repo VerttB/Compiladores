@@ -569,6 +569,8 @@
 					else{
 						inserirVazios(pos, tokenInfo);
 					}
+					tokenInfo.arrayDim[0] = 0;
+					tokenInfo.arrayDim[1] = 0;
 					}while(tk.codigo == VIRGULA && tk.cat == SN);
 
 					verificaFaltaParam(buscaLexPos(lexema));

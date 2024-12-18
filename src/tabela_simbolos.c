@@ -159,6 +159,7 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
    // tabela.tokensTab[auxNum].zumbi = VIVO;
    // tabela.tokensTab[auxNum].
     tokenInfo.zumbi = VIVO;
+    tokenInfo.endereco = tabela.tokensTab[auxNum].endereco;
     tabela.tokensTab[auxNum] = tokenInfo;
     printarTabela(auxNum);
 }
