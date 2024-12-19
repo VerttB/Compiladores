@@ -52,6 +52,7 @@ typedef struct tokenInfo{
     EHCONST ehConst;
     ValConst valConst;
     int endereco;
+    char rotulo[8];
 }TokenInfo;
 //Talves seja interessante criar um campo para descobrir quantos parametros proc tem
 
@@ -75,4 +76,5 @@ void inserirVazios(int, TokenInfo);
 void matarZumbis(int);
 void retirarLocais();
 TokenInfo buscaDecl(char *);
+char *geraRotulo();
 #endif

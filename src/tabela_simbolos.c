@@ -57,6 +57,7 @@ char *T_ehConst[] = {
 void inserirNaTabela(TokenInfo token){
     buscaDeclRep(token); // Verifica Repetição de lexema
     token.endereco = tabela.topo;
+    if(token.idcategoria == PROT_ || token.idcategoria == PROC) strcpy(token.rotulo, geraRotulo());
     tabela.tokensTab[tabela.topo] = token;
     tabela.topo++;
     printarTabela(-1);
@@ -83,9 +84,9 @@ int buscaLexPos(char *lexema){
 void printarTabela(int pos){
     TokenInfo aux;
     printf("\n");
-    printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬─────────┐\n");
-    printf("│\t\tLexema\t\t│tipo│escopo│passagem│zumbi│  array  │dimUm│dimDois│ehConst│valConst│endereço│categoria│\n");
-    printf("├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
+    printf("┌───────────────────────────────┬────┬──────┬────────┬─────┬─────────┬─────┬───────┬────────────────┬────────┬─────────┬────────┐\n");
+    printf("│\t\tLexema\t\t│tipo│escopo│passagem│zumbi│  array  │dimUm│dimDois│ehConst│valConst│endereço│categoria│ Rotulo │\n");
+    printf("├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┼────────┤\n");
 
     for(int i = 0 ; i < tabela.topo;i++){
         printf("│");
@@ -112,12 +113,13 @@ void printarTabela(int pos){
         }
         printf("│%-8d", aux.endereco);
         printf("│%-9s", T_IdCategoria[aux.idcategoria]);
+        printf("│%-8s", aux.rotulo);
         printf("%s│",_NORMAL_);
-    printf("\n├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┤\n");
+    printf("\n├───────────────────────────────┼────┼──────┼────────┼─────┼─────────┼─────┼───────┼───────┼────────┼────────┼─────────┼────────┤\n");
 
     }
    
-    printf("└───────────────────────────────┴────┴──────┴────────┴─────┴─────────┴─────┴───────┴───────┴────────┴────────┴─────────┘\n");
+    printf("└───────────────────────────────┴────┴──────┴────────┴─────┴─────────┴─────┴───────┴───────┴────────┴────────┴─────────┼────────┘\n");
     printf("Pressione Enter para continuar...\n");
     getchar();
  }
@@ -197,4 +199,13 @@ TokenInfo buscaDecl(char *lexema){
     int pos = buscaLexPos(lexema);
     if(pos < 0)  error("Declaração não encontrada");
     return tabela.tokensTab[pos];
+}
+
+char *geraRotulo(){
+    static int count = 0;
+    static char label[8];
+    snprintf(label, sizeof(label),"LBL %d",count);
+    count++;
+    return label;
+
 }
