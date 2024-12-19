@@ -10,7 +10,7 @@
 - [x] Quantidade de parametros em Declarações de função
 - [x] Declaração de lista de variáveis antes de CMD
 - [x] Init não deve ter protótipo
-- [ ] Funções podem ser chamadas somente mediante o uso de DO
+- [x] Funções podem ser chamadas somente mediante o uso de DO
 
 ## Consistência Tipos
 
