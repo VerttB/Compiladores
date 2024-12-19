@@ -118,6 +118,12 @@
 				tk.processado = true;
 			}
 		}
+		else if(tk.cat == SN && tk.codigo == NEGACAO){
+			tk.processado = true;
+			tk = analex(f);
+			printf("NEGAÇÂO");
+			Fator();
+		}
 		else {
 			error("Identificador, constante inteira ou abre parênteses esperado!\n");
 		}

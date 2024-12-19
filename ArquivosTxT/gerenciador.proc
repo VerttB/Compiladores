@@ -1,4 +1,4 @@
-int lines = 0, collumns = 0
+int index = 0, collumns = 0
 const int MAX_TAM_TAREFAS = 1024, MAX_LETTERS = 32, MAX_ROWS = 4
 char tarefas[MAX_TAM_TAREFAS][MAX_LETTERS]
 
@@ -9,7 +9,6 @@ prot listarTarefas()
 prot removerTodasTarefas()
 
 def adicionarTarefa(char t[MAX_LETTERS])
-    adicionarTarefa()
     tarefas[index] = t
     index = index + 1
 endp
