@@ -9,6 +9,7 @@ prot listarTarefas()
 prot removerTodasTarefas()
 
 def adicionarTarefa(char t[MAX_LETTERS])
+    adicionarTarefa()
     tarefas[index] = t
     index = index + 1
 endp

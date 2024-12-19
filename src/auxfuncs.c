@@ -11,7 +11,7 @@
         printf("Erro: ");
         vprintf(err,args);
         va_end(args);
-        printf(" Na linha %d\n", linha-1);
+        printf(" Na linha %d\n", linha);
         printf(_NORMAL_);
         exit(1);
     }

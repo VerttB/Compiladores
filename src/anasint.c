@@ -27,6 +27,8 @@
 		if (tk.cat != ID) {
 			error("Identificador esperado!\n");
 		}
+		TokenInfo aux = buscaDecl(tk.lexema);
+		if(aux.idcategoria == PROC || aux.idcategoria == PROT) error("Chamada incorreta de procedimento");
 		tk.processado = true;
 		tk = analex(f);
 		while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
@@ -631,7 +633,6 @@
 	}
 
 	void defineTipoArray(int dimensaoArray){
-		printf("Dimensão %d\n");
 		if(dimensaoArray == 1) tokenInfo.array = VETOR;
 		else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
 		else tokenInfo.array = SIMPLES;
