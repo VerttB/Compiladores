@@ -16,3 +16,15 @@
 
 - [ ] Inteiros podem receber tanto inteiros quanto caracteres, o mesmo vale para caracter
 - [ ] Boleanos recebem somente inteiros, recebendo 0(False) caso o inteiro tenha valor 0 e 1(True) caso tenha valor diferente
+
+## Declaração e Definição de procedimentos
+
+- [x] Procedimentos não podem ocorrer dentro de expressões
+- [x] Procedimentos podem ter variáveis locais
+- [x] Procedimento não pode ser declarado dentro de outro
+- [x] & Indica que o parâmetro é transferido via referência
+
+## Dados
+
+- [x] Estrutura máxima suportada é matriz
+- [x] Constantes devem ser inicializadas em sua declaração

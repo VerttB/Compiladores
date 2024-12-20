@@ -24,6 +24,8 @@
 	}
 
 	void Atrib() {
+		char cmdObj[20];
+		int codigoOp;
 		if (tk.cat != ID) {
 			error("Identificador esperado!\n");
 		}
@@ -45,13 +47,14 @@
 		tk.processado = true;
 
 		Expr();
-		
+		snprintf(cmdObj, sizeof(cmdObj), "STOR %d\n", aux.endereco);
+		fputs(cmdObj, f_out);
 
 	}
 
 	void Expr() {
 		exprSimples();
-		if(tk.cat == SN && (tk.codigo == MAIORQUE || tk.codigo == MAIORIGUAL || 
+		while (tk.cat == SN && (tk.codigo == MAIORQUE || tk.codigo == MAIORIGUAL || 
 							tk.codigo == MENORQUE || tk.codigo == MENORIGUAL ||
 							tk.codigo == NEGACAO  || tk.codigo == DIFERENTE  ||
 							tk.codigo == IGUALDADE)){
@@ -71,25 +74,38 @@
 		Sobra();
 	}
 	void Resto() {
+		int codigoOp;
 		tk = analex(f);
 		if (tk.cat == SN && (tk.codigo == ADICAO || tk.codigo == SUB || tk.codigo == OR)) {
+			codigoOp = tk.codigo;
 			tk.processado = true;
 			Termo();
+				if(codigoOp == ADICAO) fputs("ADD\n", f_out);
+				else if(codigoOp == SUB) fputs("SUB\n", f_out);
 			Resto();
 		}
 	}
 
 	void Sobra() {
+		int codigoOp;
+		tk = analex(f);
 		if(tk.cat == SN && (tk.codigo == MULT || tk.codigo == DIV || tk.codigo == AND)) {
+			printTokenDados();
+			codigoOp = tk.codigo;
 			tk.processado = true;
 			Fator();
+				if(codigoOp == MULT) fputs("MULT\n", f_out);
+				else if(codigoOp == DIV) fputs("DIV\n", f_out);
 			Sobra();
 		}
 	}
 
 	void Fator() {
+		char cmdObj[32];
 		tk = analex(f);
 		if (tk.cat == ID) { 
+			snprintf(cmdObj, sizeof(cmdObj), "LOAD %d\n", buscaDecl(tk.lexema).endereco);
+			fputs(cmdObj, f_out);
 			tk.processado = true;
 			tk = analex(f);
 			int dimensaoArray = 0;
@@ -105,8 +121,17 @@
 
 		}
 		else if (tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C) {
+			if(tk.cat == CT_I){
+				snprintf(cmdObj, sizeof(cmdObj), "PUSH %d\n", tk.valor);
+				fputs(cmdObj, f_out);
+			}
+			else if(tk.cat == CT_R){
+				snprintf(cmdObj, sizeof(cmdObj), "PUSHF %f\n", tk.valor);
+				fputs(cmdObj, f_out);
+			}
 			tk.processado = true; 
 			tk = analex(f);
+			
 		}
 		else if (tk.cat == SN && tk.codigo == PARENTESEABERTO) {
 			tk.processado = true;
@@ -115,6 +140,8 @@
 				error("Fecha parênteses esperado!\n");
 			}
 			else {
+				printf("Parentesses");
+				printTokenDados();
 				tk.processado = true;
 			}
 		}
@@ -243,6 +270,8 @@
 		}
 	}
 	void cmd(){
+		char cmdObj[20];
+		TokenInfo aux;
 		if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
 		if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida"); //Inválido se for DEF ou PROT
 		if(tk.codigo == DO){
@@ -299,7 +328,12 @@
 		else if(tk.codigo == GETINT){
 			tk.processado = true;
 			tk = analex(f);
+			fputs("GET_I\n", f_out);
 			if(tk.cat != ID) error("ID esperado para funcionamento da função");
+			aux = buscaDecl(tk.lexema);
+			if(aux.tipo == BOOL_ || aux.tipo == REAL_) error("Erro de I/O esperado INT/CHAR, recebido BOOL/REAL");
+			snprintf(cmdObj, sizeof(cmdObj), "STOR %d\n", aux.endereco);
+			fputs(cmdObj, f_out);
 			tk.processado = true;
 			tk = analex(f);
 		}
@@ -525,6 +559,7 @@
 					tk = analex(f);
 					tk.processado = true;
 				}
+			printTokenDados();
 			if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
 			retirarLocais();
 			tk.processado = true;
@@ -658,7 +693,8 @@
 	void testeSint(char *p) {
 		if ((f=fopen(p, "r")) == NULL)
 			error("Arquivo de entrada da expressão nao encontrado!\n");
-
+		if((f_out=fopen("proc.obj", "w")) == NULL) error("Erro ao abrir arquivo proc.obj");
+		fputs("INIP\n", f_out);
 		tk.processado = true;
 		tk = analex(f);
 		prog();
@@ -668,5 +704,7 @@
 			printf("\n------------------------------------\n");
 		}
 			else error("Finalização de Arquivo Inválida\n");
+		fputs("HALT", f_out);
 		fclose(f);
+		fclose(f_out);
 	}

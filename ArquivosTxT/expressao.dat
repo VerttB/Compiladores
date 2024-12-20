@@ -1,0 +1,7 @@
+
+def init
+    int x,y
+    x = (2 + 3) * 7 / 3 - (4 + 5)
+    y = x * 3
+    getint x
+endp

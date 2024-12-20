@@ -75,9 +75,12 @@ void buscaDeclRep(TokenInfo token){
     }
 }
 
+//Olhar isso aqui depois
 int buscaLexPos(char *lexema){
      for(int i = tabela.topo-1;i >= 0;i--){
-        if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0 && tabela.tokensTab[i].idcategoria != PROC_PAR) return i;
+        if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0 && tabela.tokensTab[i].zumbi != ZUMBI_){
+            return i;
+        }
     }
     return -1;
 }

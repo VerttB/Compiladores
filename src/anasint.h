@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 extern TOKEN tk;
-extern FILE *f;
+extern FILE *f, *f_out;
 extern int linha;
 
 void Atrib();
