@@ -1,7 +1,10 @@
 
 def init
     int x,y
+    real z = 2.5
     x = (2 + 3) * 7 / 3 - (4 + 5)
     y = x * 3
     getint x
+    getchar y
+    getreal z
 endp

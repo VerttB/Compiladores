@@ -90,7 +90,6 @@
 		int codigoOp;
 		tk = analex(f);
 		if(tk.cat == SN && (tk.codigo == MULT || tk.codigo == DIV || tk.codigo == AND)) {
-			printTokenDados();
 			codigoOp = tk.codigo;
 			tk.processado = true;
 			Fator();
@@ -140,8 +139,6 @@
 				error("Fecha parênteses esperado!\n");
 			}
 			else {
-				printf("Parentesses");
-				printTokenDados();
 				tk.processado = true;
 			}
 		}
@@ -321,43 +318,10 @@
 			tk = analex(f);
 		}
 		else if(tk.cat == ID) Atrib();
-		else if(tk.codigo == GETOUT){
-			tk.processado = true;
-			tk = analex(f);
-		}
-		else if(tk.codigo == GETINT){
-			tk.processado = true;
-			tk = analex(f);
-			fputs("GET_I\n", f_out);
-			if(tk.cat != ID) error("ID esperado para funcionamento da função");
-			aux = buscaDecl(tk.lexema);
-			if(aux.tipo == BOOL_ || aux.tipo == REAL_) error("Erro de I/O esperado INT/CHAR, recebido BOOL/REAL");
-			snprintf(cmdObj, sizeof(cmdObj), "STOR %d\n", aux.endereco);
-			fputs(cmdObj, f_out);
-			tk.processado = true;
-			tk = analex(f);
-		}
-		else if(tk.codigo == GETREAL){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID) error("ID esperado para funcionamento da função");
-			tk.processado = true;
-			tk = analex(f);
-		}
-		else if(tk.codigo == GETCHAR){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID) error("ID esperado para funcionamento da função");
-			tk.processado = true;
-			tk = analex(f);
-		}
-		else if(tk.codigo == GETSTR){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID) error("ID esperado para funcionamento da função");
-			tk.processado = true;
-			tk = analex(f);
-		}
+		else if(tk.cat == PV_R && (tk.codigo == GETINT || tk.codigo == GETOUT || tk.codigo == GETREAL ||
+									tk.codigo == GETCHAR || tk.codigo == GETSTR)){
+		trataGets();
+	}
 		else if(tk.codigo == PUTINT){
 			tk.processado = true;
 			tk = analex(f);
@@ -559,7 +523,6 @@
 					tk = analex(f);
 					tk.processado = true;
 				}
-			printTokenDados();
 			if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
 			retirarLocais();
 			tk.processado = true;
@@ -677,6 +640,54 @@
 		if(dimensaoArray == 1) tokenInfo.array = VETOR;
 		else if(dimensaoArray == 2) tokenInfo.array = MATRIZ;
 		else tokenInfo.array = SIMPLES;
+	}
+
+	void trataGets(){
+		TokenInfo aux;
+		char cmdObj[20];
+		if(tk.codigo == GETOUT){
+			tk.processado = true;
+			tk = analex(f);
+		}
+		else if(tk.codigo == GETINT){
+			fputs("GET_I\n", f_out);
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID) error("ID esperado para funcionamento da função");
+			aux = buscaDecl(tk.lexema);
+			if(aux.tipo == BOOL_ || aux.tipo == REAL_) error("Erro de I/O esperado INT/CHAR, recebido BOOL/REAL");
+			tk.processado = true;
+			tk = analex(f);
+		}
+		else if(tk.codigo == GETREAL){
+			fputs("GET_F\n", f_out);
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID) error("ID esperado para funcionamento da função");
+			aux = buscaDecl(tk.lexema);
+			if(aux.tipo != REAL_) error("Erro de I/O esperado REAL , recebido BOOL/INT/CHAR");
+			tk.processado = true;
+			tk = analex(f);
+		}
+		else if(tk.codigo == GETCHAR){
+			fputs("GET_C\n", f_out);
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID) error("ID esperado para funcionamento da função");
+			aux = buscaDecl(tk.lexema);
+			if(aux.tipo == BOOL_ || aux.tipo == REAL_) error("Erro de I/O esperado INT/CHAR, recebido BOOL/REAL");
+			tk.processado = true;
+			tk = analex(f);
+		}
+		else if(tk.codigo == GETSTR){
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID) error("ID esperado para funcionamento da função");
+			tk.processado = true;
+			tk = analex(f);
+		}
+		snprintf(cmdObj, sizeof(cmdObj), "STOR %d\n", aux.endereco);
+		fputs(cmdObj, f_out);
 	}
 
 	void prog(){
