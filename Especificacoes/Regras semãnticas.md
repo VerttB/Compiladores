@@ -14,8 +14,9 @@
 
 ## Consistência Tipos
 
-- [ ] Inteiros podem receber tanto inteiros quanto caracteres, o mesmo vale para caracter
+- [x] Inteiros podem receber tanto inteiros quanto caracteres, o mesmo vale para caracter
 - [ ] Boleanos recebem somente inteiros, recebendo 0(False) caso o inteiro tenha valor 0 e 1(True) caso tenha valor diferente
+- [x] Valores de chamada de procedimento usando o Do devem ser compatíveis com os parâmetros de sua definição
 
 ## Declaração e Definição de procedimentos
 

@@ -1,12 +1,14 @@
+prot teste(int)
 
-def teste(int x)
+def teste(int a, int b)
     int boo
+    do teste(a)
 endp
 
 def init
-    int x,y
-    int z
-    do teste(x)
+    int x,y,a
+    real z
+    do teste(3.5)
     x = (2 + 3) * 7 / 3 - (4 + 5)
     y = x * 3
     while(1)

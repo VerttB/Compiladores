@@ -146,11 +146,11 @@ void resetTokenInfo(TokenInfo *token) {
 
 void inserirVazios(int procPos, TokenInfo tokenInfo){
     TokenInfo aux;
-    int auxNum;
+    int auxNum = 0;
     procPos++;
     for(int i = procPos; i < tabela.topo; i++){
         if(strcmp(tokenInfo.lexema, tabela.tokensTab[i].lexema) == 0)  error("Redeclaração de parâmetro %s encontrada", tokenInfo.lexema);
-        if(strcmp(tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){aux = tabela.tokensTab[i]; auxNum = i; break;}
+        if(strcmp(tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){printf("Valor de i %d", i);aux = tabela.tokensTab[i]; auxNum = i; break;}
         if(tabela.tokensTab[i].idcategoria != PROC_PAR) error("Quantidade de parâmetros inválida");
     }
     if(auxNum == 0) error("Quantidade de argumentos inválida");
