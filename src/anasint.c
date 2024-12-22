@@ -102,7 +102,6 @@
 		char cmdObj[32];
 		tk = analex(f);
 		if (tk.cat == ID) { 
-			printf("é aqui");
 			snprintf(cmdObj, sizeof(cmdObj), "LOAD %d\n", buscaDecl(tk.lexema).endereco);
 			fputs(cmdObj, f_out);
 			tk.processado = true;
@@ -126,12 +125,12 @@
 				fputs(cmdObj, f_out);
 			}
 			else if(tk.cat == CT_R){
-				if(aux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[REAL_], T_tipo[aux.tipo]);
+				if(aux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[REAL_]);
 				snprintf(cmdObj, sizeof(cmdObj), "PUSHF %f\n", tk.valor_r);
 				fputs(cmdObj, f_out);
 			}
 			else{
-				if(aux.tipo == REAL) error("Erro semântico, atribuição de tipo inválido. Esperado %s ou %s, recebido %s", T_tipo[CHAR_], T_tipo[INT_], T_tipo[aux.tipo]);
+				if(aux.tipo == REAL || aux.tipo == BOOL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[CHAR_]);
 				snprintf(cmdObj, sizeof(cmdObj), "PUSH %d\n", tk.c);
 				fputs(cmdObj,f_out);
 			}
@@ -475,7 +474,6 @@
 					tk = analex(f);
 				}
 			defineTipoArray(dimensaoArray);
-			printf("%d ARRAy----------A_-----\n", tokenInfo.array);
 			inserirNaTabela(tokenInfo);
 			}while(tk.cat == SN && tk.codigo == VIRGULA);
 		}
@@ -637,22 +635,26 @@
 			tk = analex(f);
 			if(tk.cat != ID) error("Esperado ID do procedimento\n");
 			aux = buscaDecl(tk.lexema);
-			pos = buscaLexPos(aux.lexema);
-			contaParam(pos, &qtdParam);
+			pos = buscaLexPos(aux.lexema) + 1;
 			if(aux.idcategoria != PROC && aux.idcategoria != PROT_) error("Esperado %s ou %s, recebido %s", T_IdCategoria[PROC], T_IdCategoria[PROT_],T_IdCategoria[aux.tipo]);
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
 			tk.processado = true;
 			tk = analex(f);
-			if(tk.cat == ID || tk.cat == CT_I || tk.cat == CT_R){
+			if(tk.cat == ID || tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C){
 				if(tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade inválida de argumentos");
+				aux = tabela.tokensTab[pos];
 				Expr();
+				pos++;
 				while(tk.cat == SN && tk.codigo == VIRGULA){
+						if(tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade de argumentos maior que a esperada");
+						aux = tabela.tokensTab[pos];
 						tk.processado = true;
 						tk = analex(f);
 						if(!tk.cat == ID) error("Identificador Válido Esperado");
 						Expr();
+						pos++;
 					}
 				
 			}
