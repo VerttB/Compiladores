@@ -1,9 +1,16 @@
 
+def teste(int x)
+    int boo
+endp
+
 def init
     int x,y
-    real z = 2.5
+    int z
+    do teste(x)
     x = (2 + 3) * 7 / 3 - (4 + 5)
     y = x * 3
+    while(1)
+    endw
     getint x
     getchar y
     getreal z

@@ -25,7 +25,7 @@ void prog();
 void declDefProc();
 void param();
 void cmd();
-
+void cmdDo();
 void trataGets();
 //Lidam com inicialização de variaveis
 void declVar();

@@ -8,7 +8,7 @@
 	#include "tabela_simbolos.h"
 	#include "cores.h"
 
-	TokenInfo tokenInfo;
+	TokenInfo tokenInfo, aux;
 
 	void opRel(){
 		tk = analex(f);
@@ -25,11 +25,10 @@
 
 	void Atrib() {
 		char cmdObj[20];
-		int codigoOp;
 		if (tk.cat != ID) {
 			error("Identificador esperado!\n");
 		}
-		TokenInfo aux = buscaDecl(tk.lexema);
+		aux = buscaDecl(tk.lexema);
 		if(aux.idcategoria == PROC || aux.idcategoria == PROT) error("Chamada incorreta de procedimento");
 		tk.processado = true;
 		tk = analex(f);
@@ -103,6 +102,7 @@
 		char cmdObj[32];
 		tk = analex(f);
 		if (tk.cat == ID) { 
+			printf("é aqui");
 			snprintf(cmdObj, sizeof(cmdObj), "LOAD %d\n", buscaDecl(tk.lexema).endereco);
 			fputs(cmdObj, f_out);
 			tk.processado = true;
@@ -121,12 +121,19 @@
 		}
 		else if (tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C) {
 			if(tk.cat == CT_I){
+				if(aux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s ou %s, recebido %s", T_tipo[CHAR_], T_tipo[INT_], T_tipo[aux.tipo]);
 				snprintf(cmdObj, sizeof(cmdObj), "PUSH %d\n", tk.valor);
 				fputs(cmdObj, f_out);
 			}
 			else if(tk.cat == CT_R){
-				snprintf(cmdObj, sizeof(cmdObj), "PUSHF %f\n", tk.valor);
+				if(aux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[REAL_], T_tipo[aux.tipo]);
+				snprintf(cmdObj, sizeof(cmdObj), "PUSHF %f\n", tk.valor_r);
 				fputs(cmdObj, f_out);
+			}
+			else{
+				if(aux.tipo == REAL) error("Erro semântico, atribuição de tipo inválido. Esperado %s ou %s, recebido %s", T_tipo[CHAR_], T_tipo[INT_], T_tipo[aux.tipo]);
+				snprintf(cmdObj, sizeof(cmdObj), "PUSH %d\n", tk.c);
+				fputs(cmdObj,f_out);
 			}
 			tk.processado = true; 
 			tk = analex(f);
@@ -172,7 +179,6 @@
 			}
 			else if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 				int dimensaoArray = 0;
-				int tamArray[2];
 				while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 					dimensaoArray++;
 					if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
@@ -268,34 +274,13 @@
 	}
 	void cmd(){
 		char cmdObj[20];
-		TokenInfo aux;
 		if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
 		if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida"); //Inválido se for DEF ou PROT
-		if(tk.codigo == DO){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID) error("Esperado ID do procedimento\n");
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat == ID || tk.cat == CT_I || (tk.cat == SN && tk.codigo == PARENTESEABERTO)){
-				Expr();
-				while(tk.cat == SN && tk.codigo == VIRGULA){
-						tk.processado = true;
-						tk = analex(f);
-						if(!tk.cat == ID) error("Identificador Válido Esperado");
-						Expr();
-					}
-				
-			}
-			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("DO - Fechamento de parenteses esperado\n");
-			tk.processado = true;
-			tk = analex(f);
-		}
+		if(tk.codigo == DO) cmdDo();
 		else if(tk.codigo == WHILE){
 			printf("While Iniciado\n");
+			snprintf(cmdObj, sizeof(cmdObj), "%s\n", geraRotulo());
+			fputs(cmdObj, f_out);
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
@@ -539,6 +524,9 @@
 					strcpy(tokenInfo.lexema, tk.lexema);
 					inserirNaTabela(tokenInfo);
 				}
+				else{
+					tabela.tokensTab[pos].idcategoria = PROC;
+				}
 				tk.processado = true;
 				tk = analex(f);
 				if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
@@ -626,7 +614,7 @@
 			tokenInfo.arrayDim[dimensaoArray-1] = tk.valor;
 		}
 		else if(tk.cat == ID){
-					TokenInfo aux = buscaDecl(tk.lexema);
+					aux = buscaDecl(tk.lexema);
 					if(aux.ehConst != CONST_) error("Identificador de tamanho de array deve ser constante");
 					if(aux.tipo != INT_) error("Identificador deve ser do tipo inteiro");
 					tokenInfo.arrayDim[dimensaoArray-1] = aux.valConst.int_const;
@@ -642,8 +630,38 @@
 		else tokenInfo.array = SIMPLES;
 	}
 
+
+	void cmdDo(){
+			int pos, qtdParam;
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID) error("Esperado ID do procedimento\n");
+			aux = buscaDecl(tk.lexema);
+			pos = buscaLexPos(aux.lexema);
+			contaParam(pos, &qtdParam);
+			if(aux.idcategoria != PROC && aux.idcategoria != PROT_) error("Esperado %s ou %s, recebido %s", T_IdCategoria[PROC], T_IdCategoria[PROT_],T_IdCategoria[aux.tipo]);
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat == ID || tk.cat == CT_I || tk.cat == CT_R){
+				if(tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade inválida de argumentos");
+				Expr();
+				while(tk.cat == SN && tk.codigo == VIRGULA){
+						tk.processado = true;
+						tk = analex(f);
+						if(!tk.cat == ID) error("Identificador Válido Esperado");
+						Expr();
+					}
+				
+			}
+			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("DO - Fechamento de parenteses esperado\n");
+			tk.processado = true;
+			tk = analex(f);
+	}
+	
 	void trataGets(){
-		TokenInfo aux;
 		char cmdObj[20];
 		if(tk.codigo == GETOUT){
 			tk.processado = true;

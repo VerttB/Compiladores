@@ -147,11 +147,10 @@ void resetTokenInfo(TokenInfo *token) {
 void inserirVazios(int procPos, TokenInfo tokenInfo){
     TokenInfo aux;
     int auxNum;
-    tabela.tokensTab[procPos].idcategoria = PROC;
     procPos++;
     for(int i = procPos; i < tabela.topo; i++){
         if(strcmp(tokenInfo.lexema, tabela.tokensTab[i].lexema) == 0)  error("Redeclaração de parâmetro %s encontrada", tokenInfo.lexema);
-        if(strcmp( tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){aux = tabela.tokensTab[i]; auxNum = i; break;}
+        if(strcmp(tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){aux = tabela.tokensTab[i]; auxNum = i; break;}
         if(tabela.tokensTab[i].idcategoria != PROC_PAR) error("Quantidade de parâmetros inválida");
     }
     if(auxNum == 0) error("Quantidade de argumentos inválida");
@@ -170,7 +169,6 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
 }
 
 void verificaFaltaParam(int procPos){
-    
     procPos++;
     while(1){
         if(procPos >= tabela.topo) break;
@@ -200,7 +198,7 @@ void retirarLocais(){
 
 TokenInfo buscaDecl(char *lexema){
     int pos = buscaLexPos(lexema);
-    if(pos < 0)  error("Declaração não encontrada");
+    if(pos < 0)  error("Declaração %s não encontrada", lexema);
     return tabela.tokensTab[pos];
 }
 
@@ -211,4 +209,14 @@ char *geraRotulo(){
     count++;
     return label;
 
+}
+
+void contaParam(int pos, int *qtd){
+    pos++;
+    while(1){
+        if(tabela.tokensTab[pos].idcategoria != PROC_PAR) break;
+        if(pos == tabela.topo) break;
+        pos++;
+        (*qtd)++;
+    }
 }
