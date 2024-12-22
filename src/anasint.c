@@ -102,8 +102,12 @@
 		char cmdObj[32];
 		tk = analex(f);
 		if (tk.cat == ID) { 
-			snprintf(cmdObj, sizeof(cmdObj), "LOAD %d\n", buscaDecl(tk.lexema).endereco);
+			TokenInfo TypesAux;
+			TypesAux = buscaDecl(tk.lexema);
+			if(aux.tipo == REAL_ && TypesAux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			snprintf(cmdObj, sizeof(cmdObj), "LOAD %d\n", TypesAux.endereco);
 			fputs(cmdObj, f_out);
+			
 			tk.processado = true;
 			tk = analex(f);
 			int dimensaoArray = 0;
@@ -630,12 +634,13 @@
 
 
 	void cmdDo(){
-			int pos, qtdParam;
+			int pos, qtdParam = 0;
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID) error("Esperado ID do procedimento\n");
 			aux = buscaDecl(tk.lexema);
 			pos = buscaLexPos(aux.lexema) + 1;
+			contaParam(pos-1, &qtdParam);
 			if(aux.idcategoria != PROC && aux.idcategoria != PROT_) error("Esperado %s ou %s, recebido %s", T_IdCategoria[PROC], T_IdCategoria[PROT_],T_IdCategoria[aux.tipo]);
 			tk.processado = true;
 			tk = analex(f);
@@ -647,17 +652,20 @@
 				aux = tabela.tokensTab[pos];
 				Expr();
 				pos++;
+				qtdParam--;
 				while(tk.cat == SN && tk.codigo == VIRGULA){
 						if(tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade de argumentos maior que a esperada");
 						aux = tabela.tokensTab[pos];
 						tk.processado = true;
 						tk = analex(f);
-						if(!tk.cat == ID) error("Identificador Válido Esperado");
+						if(!(tk.cat == ID || tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C)) error("Identificador, constante inteira, caracter ou real esperado");
 						Expr();
 						pos++;
+						qtdParam--;
 					}
 				
 			}
+			if(qtdParam > 0) error("Quantidade de argumentos passada menor que a esperada");
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("DO - Fechamento de parenteses esperado\n");
 			tk.processado = true;
 			tk = analex(f);
