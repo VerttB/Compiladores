@@ -1,19 +1,15 @@
-prot teste(int, char)
 
-def teste(int a, char b)
-    int boo
-    do teste(a,b)
-endp
 
 def init
-    int x,y,a
-    real z
-    do teste(a,z)
+    const int l = 'a',k = 97, o = 2.5
+   int x,y,z
+    bool f
+    f = 'a'
+    z = 5 > 2
     x = (2 + 3) * 7 / 3 - (4 + 5)
     y = x * 3
     while(1)
     endw
     getint x
     getchar y
-    getreal z
 endp

@@ -17,6 +17,7 @@
 							tk.codigo == NEGACAO  || tk.codigo == DIFERENTE  ||
 							tk.codigo == IGUALDADE)){
 			tk.processado = true;
+			
 		}
 		else{
 			error("Operador rel esperado");
@@ -105,12 +106,17 @@
 			TokenInfo TypesAux;
 			TypesAux = buscaDecl(tk.lexema);
 			if(aux.tipo == REAL_ && TypesAux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			if((aux.tipo == CHAR_ || aux.tipo == INT_ || aux.tipo == BOOL_) && TypesAux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			
+
 			snprintf(cmdObj, sizeof(cmdObj), "LOAD %d\n", TypesAux.endereco);
 			fputs(cmdObj, f_out);
 			
 			tk.processado = true;
 			tk = analex(f);
 			int dimensaoArray = 0;
+			aux = TypesAux;
 			while(tk.codigo == COLCHETEABERTO){
 				dimensaoArray++;
 				if(dimensaoArray > 2) error("Expr - Matriz de tamanho inválido");
@@ -130,11 +136,13 @@
 			}
 			else if(tk.cat == CT_R){
 				if(aux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[REAL_]);
+				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
 				snprintf(cmdObj, sizeof(cmdObj), "PUSHF %f\n", tk.valor_r);
 				fputs(cmdObj, f_out);
 			}
 			else{
 				if(aux.tipo == REAL || aux.tipo == BOOL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[CHAR_]);
+				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
 				snprintf(cmdObj, sizeof(cmdObj), "PUSH %d\n", tk.c);
 				fputs(cmdObj,f_out);
 			}
@@ -205,12 +213,9 @@
 
 		void varInit(){
 			if(tk.cat == CT_C || tk.cat == CT_I || tk.cat == CT_R){
+					validarVarInit();
 					if(tokenInfo.ehConst == CONST_){
-						if(tk.cat == CT_C && tokenInfo.tipo == CHAR_) tokenInfo.valConst.char_const = tk.c;
-						else if(tk.cat == CT_I && tokenInfo.tipo == INT_) tokenInfo.valConst.int_const = tk.valor;
-						else if (tk.cat == CT_R && tokenInfo.tipo == REAL_) tokenInfo.valConst.float_const = tk.valor_r; //Aceita os reais
-						else if(tk.cat == CT_I && tokenInfo.tipo == BOOL_) tokenInfo.valConst.bool_const = tk.valor > 0 ? 1 : 0;
-						else error("Atribuição de constante inválida.");
+						atribuirConst();
 					}
 					tk.processado = true;
 					tk = analex(f);
@@ -716,6 +721,31 @@
 		}
 		snprintf(cmdObj, sizeof(cmdObj), "STOR %d\n", aux.endereco);
 		fputs(cmdObj, f_out);
+	}
+
+	void validarVarInit(){
+		if(tokenInfo.tipo == BOOL_ && tk.cat != CT_I) error("Erro semântico, inicialização inválida. Esperado %s", T_tipo[tokenInfo.tipo]);
+		else if((tokenInfo.tipo == INT_ || tokenInfo.tipo == CHAR_) && tk.cat == CT_R) error("Erro semântico, inicialização inválida. Esperado %s", T_tipo[tokenInfo.tipo]);
+		else if(tokenInfo.tipo == REAL_ && tk.cat != CT_R) error("Erro semântico, inicialização inválida. Esperado %s", T_tipo[tokenInfo.tipo]);
+	}
+	void atribuirConst(){
+		 switch (tokenInfo.tipo) {
+        case CHAR_:
+            tokenInfo.valConst.char_const = tk.c;
+            break;
+        case INT_:
+            tokenInfo.valConst.int_const = tk.valor;
+            break;
+        case REAL_:
+            tokenInfo.valConst.float_const = tk.valor_r;
+            break;
+        case BOOL_:
+            tokenInfo.valConst.bool_const = tk.valor > 0 ? 1 : 0;
+            break;
+        default:
+            error("Tipo de constante desconhecido.");
+            break;
+    }
 	}
 
 	void prog(){

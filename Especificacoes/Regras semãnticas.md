@@ -25,6 +25,17 @@
 - [x] Procedimento não pode ser declarado dentro de outro
 - [x] & Indica que o parâmetro é transferido via referência
 
+## Expressões
+
+- [x] Se expr é somente um identificador então o tipo de expr é desse identificador
+- [x] Se expr é uma expressão então seu tipo é compatível com os tipos utilizados nela, seguindo a regra de que inteiro é compatível somente com caracter e boolean e vice versa, se tiver qualquer desses tipos e vier um real, um erro vai acontecer
+- [x] Os argumentos passados em chamadas de procedimento devem ser compatíveis com os parâmetros em sua declaração ou prototipagem
+- [x] Expressões utilizadas em índices devem ser de tipo inteiro // Aparentemente ta certo
+
+## Comandos
+
+- [x] Apenas os tipos básicos real, int, bool e char podem receber atribuições e o tipo associado deve ser compatível
+
 ## Dados
 
 - [x] Estrutura máxima suportada é matriz

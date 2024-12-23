@@ -34,6 +34,8 @@ void tipo();
 
 
 void varInit(); //Trata das inicializações intcon |realcon | charcon | stringcon
+void validarVarInit();
+void atribuirConst();
 void arrayInit(); //Trata das inicializações de array = {}
 void insereDimensaoArray(int);
 void defineTipoArray(int);
