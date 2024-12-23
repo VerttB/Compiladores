@@ -25,7 +25,7 @@
 	}
 
 	void Atrib() {
-		char cmdObj[20];
+		char codPilha[20];
 		if (tk.cat != ID) {
 			error("Identificador esperado!\n");
 		}
@@ -47,8 +47,8 @@
 		tk.processado = true;
 
 		Expr();
-		snprintf(cmdObj, sizeof(cmdObj), "STOR %d\n", aux.endereco);
-		fputs(cmdObj, f_out);
+		snprintf(codPilha, sizeof(codPilha), "STOR %d\n", aux.endereco);
+		fputs(codPilha, f_out);
 
 	}
 
@@ -100,7 +100,7 @@
 	}
 
 	void Fator() {
-		char cmdObj[32];
+		char codPilha[32];
 		tk = analex(f);
 		if (tk.cat == ID) { 
 			TokenInfo TypesAux;
@@ -110,8 +110,8 @@
 			if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			
 
-			snprintf(cmdObj, sizeof(cmdObj), "LOAD %d\n", TypesAux.endereco);
-			fputs(cmdObj, f_out);
+			snprintf(codPilha, sizeof(codPilha), "LOAD %d\n", TypesAux.endereco);
+			fputs(codPilha, f_out);
 			
 			tk.processado = true;
 			tk = analex(f);
@@ -131,20 +131,20 @@
 		else if (tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C) {
 			if(tk.cat == CT_I){
 				if(aux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s ou %s, recebido %s", T_tipo[CHAR_], T_tipo[INT_], T_tipo[aux.tipo]);
-				snprintf(cmdObj, sizeof(cmdObj), "PUSH %d\n", tk.valor);
-				fputs(cmdObj, f_out);
+				snprintf(codPilha, sizeof(codPilha), "PUSH %d\n", tk.valor);
+				fputs(codPilha, f_out);
 			}
 			else if(tk.cat == CT_R){
 				if(aux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[REAL_]);
 				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
-				snprintf(cmdObj, sizeof(cmdObj), "PUSHF %f\n", tk.valor_r);
-				fputs(cmdObj, f_out);
+				snprintf(codPilha, sizeof(codPilha), "PUSHF %f\n", tk.valor_r);
+				fputs(codPilha, f_out);
 			}
 			else{
 				if(aux.tipo == REAL || aux.tipo == BOOL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[CHAR_]);
 				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
-				snprintf(cmdObj, sizeof(cmdObj), "PUSH %d\n", tk.c);
-				fputs(cmdObj,f_out);
+				snprintf(codPilha, sizeof(codPilha), "PUSH %d\n", tk.c);
+				fputs(codPilha,f_out);
 			}
 			tk.processado = true; 
 			tk = analex(f);
@@ -248,6 +248,8 @@
 	}
 
 	void declListVar(){
+		int countVar = 0;
+		char codPilha[20];
 		tokenInfo.ehConst = NORMAL;
 		tokenInfo.passagem = NA_PASSAGEM;
 		tokenInfo.zumbi = NA_ZUMBI;
@@ -261,11 +263,14 @@
 		}
 		tipo();
 		declVar();
+		countVar++;
 			while(tk.cat == SN && tk.codigo == VIRGULA){
 				tk.processado = true;
 				tk = analex(f);
 				declVar();
+				countVar++;
 			}
+
 	}
 	void tipo(){
 		if(tk.cat == PV_R && (tk.codigo == INT || tk.codigo == REAL || tk.codigo == BOOL || tk.codigo == CHAR)){
@@ -281,7 +286,7 @@
 		}
 	}
 	void cmd(){
-		char cmdObj[20];
+		char codPilha[20];
 		if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
 		if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida"); //Inválido se for DEF ou PROT
 		if(tk.codigo == DO) cmdDo();
@@ -298,6 +303,7 @@
 
 	void declDefProc(){
 		if(tk.cat != PV_R) error("Inicializador de Função esperado");
+			char codPilha[20];
 			tokenInfo.array = NA_ARRAY;
 			tokenInfo.escopo = GLOBAL;
 			tokenInfo.ehConst = NORMAL;
@@ -354,12 +360,15 @@
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat == PV_R && tk.codigo == INIT){
+				char initRotulo[20];
 				printf("Init inicializado");
 				strcpy(tokenInfo.lexema, "Init");
 				inserirNaTabela(tokenInfo);
+				strcpy(initRotulo, buscaDecl(tokenInfo.lexema).rotulo);
 				tk.processado = true;
 				tk = analex(f);
-				
+				snprintf(codPilha, sizeof(codPilha), "LABEL %s\n", initRotulo);
+				fputs(codPilha, f_out);
 				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 					tokenInfo.escopo = LOCAL;
 					tokenInfo.idcategoria = VAR_LOCAL;
@@ -380,18 +389,23 @@
 			printFinalizacao("Init finalizado ");
 			}
 			else if(tk.cat == ID){
+				char idRotulo[20];
 				printf("Def %s inicializado\n", tk.lexema);
 				int pos;
 				char lexema[32];
-				strncpy(lexema, tk.lexema, sizeof(lexema) - 1); //Faz uma cópia do lexema
+				strncpy(lexema, tk.lexema, sizeof(lexema) - 1); 
 				lexema[sizeof(lexema) - 1] = '\0';
 				if((pos = buscaLexPos(tk.lexema)) == -1){
 					strcpy(tokenInfo.lexema, tk.lexema);
 					inserirNaTabela(tokenInfo);
+					strcpy(idRotulo, buscaDecl(tokenInfo.lexema).rotulo);
 				}
 				else{
 					tabela.tokensTab[pos].idcategoria = PROC;
+					strcpy(idRotulo, tabela.tokensTab[pos].rotulo);
 				}
+				snprintf(codPilha, sizeof(codPilha), "LABEL %s\n", idRotulo);
+				fputs(codPilha, f_out);
 				tk.processado = true;
 				tk = analex(f);
 				if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
@@ -497,11 +511,14 @@
 
 
 	void cmdDo(){
+			char codPilha[20];
 			int pos, qtdParam = 0;
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID) error("Esperado ID do procedimento\n");
 			aux = buscaDecl(tk.lexema);
+			snprintf(codPilha, sizeof(codPilha), "CALL %s\n", aux.rotulo);
+			fputs(codPilha, f_out);
 			pos = buscaLexPos(aux.lexema) + 1;
 			contaParam(pos-1, &qtdParam);
 			if(aux.idcategoria != PROC && aux.idcategoria != PROT_) error("Esperado %s ou %s, recebido %s", T_IdCategoria[PROC], T_IdCategoria[PROT_],T_IdCategoria[aux.tipo]);
@@ -510,7 +527,8 @@
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
 			tk.processado = true;
 			tk = analex(f);
-			if(tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade inválida de argumentos");
+			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO){
+			if(qtdParam > 0 && tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade inválida de argumentos");
 				aux = tabela.tokensTab[pos];
 				Expr();
 				pos++;
@@ -524,6 +542,7 @@
 						pos++;
 						qtdParam--;
 					}
+			}
 			if(qtdParam > 0) error("Quantidade de argumentos passada menor que a esperada");
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("DO - Fechamento de parenteses esperado\n");
 			tk.processado = true;
@@ -531,10 +550,10 @@
 	}
 	
 	void cmdWhile(){
-			char cmdObj[20];
+			char codPilha[20];
 			printf("While Iniciado\n");
-			snprintf(cmdObj, sizeof(cmdObj), "%s\n", geraRotulo());
-			fputs(cmdObj, f_out);
+			snprintf(codPilha, sizeof(codPilha), "LABEL %s\n", geraRotulo());
+			fputs(codPilha, f_out);
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
@@ -557,7 +576,7 @@
 			tk = analex(f);
 	}
 	void cmdGets(){
-		char cmdObj[20];
+		char codPilha[20];
 		if(tk.codigo == GETOUT){
 			tk.processado = true;
 			tk = analex(f);
@@ -599,11 +618,11 @@
 			tk.processado = true;
 			tk = analex(f);
 		}
-		snprintf(cmdObj, sizeof(cmdObj), "STOR %d\n", aux.endereco);
-		fputs(cmdObj, f_out);
+		snprintf(codPilha, sizeof(codPilha), "STOR %d\n", aux.endereco);
+		fputs(codPilha, f_out);
 	}
 
-	cmdVar(){
+	void cmdVar(){
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID) error("Identificador Esperado");
@@ -639,6 +658,7 @@
 
 	void cmdIf(){
 		printf("If iniciado\n");
+		char ifOutRotulo[20], elseRotulo[20],elifRotulo[20], codPilha[20];
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
@@ -647,12 +667,15 @@
 		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
 		tk.processado = true;
 		tk = analex(f);
+		strcpy(ifOutRotulo, geraRotulo());
+		snprintf(codPilha, sizeof(codPilha), "GOFALSE %s", ifOutRotulo);
 		while(tk.codigo != ELSE && tk.codigo != ELIF && tk.codigo != ENDI){
 			if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado dentro do loop WHILE");
 				tk.processado = true;
 				cmd();
 				tk = analex(f);
 			}
+		
 			while(tk.codigo == ELIF){
 				printf("Elif iniciado\n");
 				tk.processado = true;
@@ -671,7 +694,10 @@
 					}
 					printFinalizacao("Elif finalizado ");	
 				}
+				snprintf(codPilha, sizeof(codPilha), "GOTO %s", ifOutRotulo);
 				if(tk.codigo == ELSE){
+					strcpy(elseRotulo, geraRotulo());
+					
 					printf("Else iniciado\n");
 					tk.processado = true;
 					tk = analex(f);
@@ -685,6 +711,7 @@
 				printFinalizacao("Finalização de Else");
 				if(tk.codigo != ENDI) error("Esperada finalização de If");
 				printFinalizacao("Finalização de If ");
+				if(strcmp())
 				tk.processado = true;
 				tk = analex(f);
 	}
