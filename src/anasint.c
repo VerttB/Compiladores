@@ -285,154 +285,12 @@
 		if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
 		if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida"); //Inválido se for DEF ou PROT
 		if(tk.codigo == DO) cmdDo();
-		else if(tk.codigo == WHILE){
-			printf("While Iniciado\n");
-			snprintf(cmdObj, sizeof(cmdObj), "%s\n", geraRotulo());
-			fputs(cmdObj, f_out);
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
-			tk.processado = true;
-			Expr();
-			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
-			tk.processado = true;
-			tk = analex(f);
-			while(tk.codigo != ENDW){
-				if (tk.cat == FIM_ARQ) {
-					error("Fim do arquivo inesperado dentro do loop WHILE");
-				}
-				tk.processado = true;
-				cmd();
-				tk = analex(f);
-			}
-			if(tk.codigo != ENDW) error("ENDW esperado\n");
-			printFinalizacao("While finalizado corretamente");
-			tk.processado = true;
-			tk = analex(f);
-		}
+		else if(tk.codigo == WHILE) cmdWhile();
 		else if(tk.cat == ID) Atrib();
-		else if(tk.cat == PV_R && (tk.codigo == GETINT || tk.codigo == GETOUT || tk.codigo == GETREAL ||
-									tk.codigo == GETCHAR || tk.codigo == GETSTR)){
-		trataGets();
-	}
-		else if(tk.codigo == PUTINT){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID && tk.cat != CT_I) error("ID ou constante inteira esperado para funcionamento da função");
-			tk.processado = true;
-			tk = analex(f);
-		}
-		else if(tk.codigo == PUTREAL){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID && tk.cat != CT_R) error("ID ou constante real esperado para funcionamento da função");
-			tk.processado = true;
-			tk = analex(f);
-		}
-		
-		else if(tk.codigo == PUTCHAR){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID && tk.cat != CT_C) error("ID ou constante char esperado para funcionamento da função");
-			tk.processado = true;
-			tk = analex(f);
-		}
-		else if(tk.codigo == PUTSTR){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID && tk.cat != LT) error("ID ou constante string esperado para funcionamento da função");
-			tk.processado = true;
-			tk = analex(f);
-		}
-		else if(tk.codigo == VAR){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID) error("Identificador Esperado");
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != PV_R && tk.codigo != FROM) error("Palavra chave from esperado");
-			tk.processado = true;
-			Expr();
-			if(tk.cat != PV_R && (tk.codigo != DT || tk.codigo != TO)) error("Esperado DT ou TO");
-			tk.processado = true;
-			Expr();
-
-			if(tk.cat == PV_R && tk.codigo == BY){
-				tk.processado = true;
-				tk = analex(f);
-				if(tk.cat != ID && tk.cat != CT_I) error("VAR: Identificador ou constante inteira esperada");
-				tk.processado = true;
-				tk = analex(f);
-			} 
-			tk.processado = true;
-			while(tk.codigo != ENDV){
-				if (tk.cat == FIM_ARQ) {
-					error("Fim do arquivo inesperado dentro do loop WHILE");
-				}
-				tk.processado = true;
-				cmd();
-				tk = analex(f);
-			}
-			if(tk.cat != PV_R && tk.codigo != ENDV) error("VAR: Fim do comando esperado");
-			printFinalizacao("Expressão Var finalizada com sucesso na linha");
-			tk.processado = true;
-			}
-			else if(tk.codigo == IF){
-				printf("If iniciado\n");
-				tk.processado = true;
-				tk = analex(f);
-				if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
-				tk.processado = true;
-				Expr();
-				if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
-				tk.processado = true;
-				tk = analex(f);
-				while(tk.codigo != ELSE && tk.codigo != ELIF && tk.codigo != ENDI){
-					if (tk.cat == FIM_ARQ) {
-						error("Fim do arquivo inesperado dentro do loop WHILE");
-				}
-					tk.processado = true;
-					cmd();
-					tk = analex(f);
-				}
-				while(tk.codigo == ELIF){
-					printf("Elif iniciado\n");
-					tk.processado = true;
-					tk = analex(f);
-					if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
-					tk.processado = true;
-					Expr();
-					if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
-					tk.processado = true;
-					tk = analex(f);
-					while(tk.codigo != ELIF && tk.codigo != ELSE && tk.codigo != ENDI){
-						if (tk.cat == FIM_ARQ) {
-						error("Fim do arquivo inesperado dentro do loop WHILE");
-						}
-		
-						tk.processado = true;
-						cmd();
-						tk = analex(f);
-					}
-					printFinalizacao("Elif finalizado ");	
-				}
-				if(tk.codigo == ELSE){
-					printf("Else iniciado\n");
-					tk.processado = true;
-					tk = analex(f);
-					while(tk.codigo != ENDI){
-						if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado dentro do loop WHILE");
-						tk.processado = true;
-						cmd();
-						tk = analex(f);
-					}
-				}
-				printFinalizacao("Finalização de Else");
-				if(tk.codigo != ENDI) error("Esperada finalização de If");
-				printFinalizacao("Finalização de If ");
-				tk.processado = true;
-				tk = analex(f);
-			}
+		else if(tk.codigo == GETINT || tk.codigo == GETOUT || tk.codigo == GETREAL ||tk.codigo == GETCHAR || tk.codigo == GETSTR) cmdGets();
+		else if(tk.codigo == PUTINT || tk.codigo == PUTREAL || tk.codigo == PUTREAL || tk.codigo == PUTSTR) cmdPuts();
+		else if(tk.codigo == VAR) cmdVar();
+		else if(tk.codigo == IF) cmdIf();
 			else if(tk.cat == PV_R  && (tk.codigo == ENDI || tk.codigo == ENDW || tk.codigo == ENDP 
 			|| tk.codigo == ENDV || tk.codigo == ELSE || tk.codigo == ELIF)) error("Finalização de comando inesperada");
 		
@@ -652,8 +510,7 @@
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
 			tk.processado = true;
 			tk = analex(f);
-			if(tk.cat == ID || tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C){
-				if(tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade inválida de argumentos");
+			if(tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade inválida de argumentos");
 				aux = tabela.tokensTab[pos];
 				Expr();
 				pos++;
@@ -663,20 +520,43 @@
 						aux = tabela.tokensTab[pos];
 						tk.processado = true;
 						tk = analex(f);
-						if(!(tk.cat == ID || tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C)) error("Identificador, constante inteira, caracter ou real esperado");
 						Expr();
 						pos++;
 						qtdParam--;
 					}
-				
-			}
 			if(qtdParam > 0) error("Quantidade de argumentos passada menor que a esperada");
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("DO - Fechamento de parenteses esperado\n");
 			tk.processado = true;
 			tk = analex(f);
 	}
 	
-	void trataGets(){
+	void cmdWhile(){
+			char cmdObj[20];
+			printf("While Iniciado\n");
+			snprintf(cmdObj, sizeof(cmdObj), "%s\n", geraRotulo());
+			fputs(cmdObj, f_out);
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
+			tk.processado = true;
+			Expr();
+			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
+			tk.processado = true;
+			tk = analex(f);
+			while(tk.codigo != ENDW){
+				if (tk.cat == FIM_ARQ) {
+					error("Fim do arquivo inesperado dentro do loop WHILE");
+				}
+				tk.processado = true;
+				cmd();
+				tk = analex(f);
+			}
+			if(tk.codigo != ENDW) error("ENDW esperado\n");
+			printFinalizacao("While finalizado corretamente");
+			tk.processado = true;
+			tk = analex(f);
+	}
+	void cmdGets(){
 		char cmdObj[20];
 		if(tk.codigo == GETOUT){
 			tk.processado = true;
@@ -723,6 +603,122 @@
 		fputs(cmdObj, f_out);
 	}
 
+	cmdVar(){
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID) error("Identificador Esperado");
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != PV_R && tk.codigo != FROM) error("Palavra chave from esperado");
+			tk.processado = true;
+			Expr();
+			if(tk.cat != PV_R && (tk.codigo != DT || tk.codigo != TO)) error("Esperado DT ou TO");
+			tk.processado = true;
+			Expr();
+
+			if(tk.cat == PV_R && tk.codigo == BY){
+				tk.processado = true;
+				tk = analex(f);
+				if(tk.cat != ID && tk.cat != CT_I) error("VAR: Identificador ou constante inteira esperada");
+				tk.processado = true;
+				tk = analex(f);
+			} 
+			tk.processado = true;
+			while(tk.codigo != ENDV){
+				if (tk.cat == FIM_ARQ) {
+					error("Fim do arquivo inesperado dentro do loop WHILE");
+				}
+				tk.processado = true;
+				cmd();
+				tk = analex(f);
+			}
+			if(tk.cat != PV_R && tk.codigo != ENDV) error("VAR: Fim do comando esperado");
+			printFinalizacao("Expressão Var finalizada com sucesso na linha");
+			tk.processado = true;
+	}
+
+	void cmdIf(){
+		printf("If iniciado\n");
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
+		tk.processado = true;
+		Expr();
+		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
+		tk.processado = true;
+		tk = analex(f);
+		while(tk.codigo != ELSE && tk.codigo != ELIF && tk.codigo != ENDI){
+			if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado dentro do loop WHILE");
+				tk.processado = true;
+				cmd();
+				tk = analex(f);
+			}
+			while(tk.codigo == ELIF){
+				printf("Elif iniciado\n");
+				tk.processado = true;
+				tk = analex(f);
+				if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
+				tk.processado = true;
+				Expr();
+				if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
+				tk.processado = true;
+				tk = analex(f);
+				while(tk.codigo != ELIF && tk.codigo != ELSE && tk.codigo != ENDI){
+					if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado dentro do loop WHILE");
+						tk.processado = true;
+						cmd();
+						tk = analex(f);
+					}
+					printFinalizacao("Elif finalizado ");	
+				}
+				if(tk.codigo == ELSE){
+					printf("Else iniciado\n");
+					tk.processado = true;
+					tk = analex(f);
+					while(tk.codigo != ENDI){
+						if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado dentro do loop WHILE");
+						tk.processado = true;
+						cmd();
+						tk = analex(f);
+					}
+				}
+				printFinalizacao("Finalização de Else");
+				if(tk.codigo != ENDI) error("Esperada finalização de If");
+				printFinalizacao("Finalização de If ");
+				tk.processado = true;
+				tk = analex(f);
+	}
+	void cmdPuts(){
+		if(tk.codigo == PUTINT){
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID && tk.cat != CT_I) error("ID ou constante inteira esperado para funcionamento da função");
+			tk.processado = true;
+			tk = analex(f);
+		}
+		else if(tk.codigo == PUTREAL){
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID && tk.cat != CT_R) error("ID ou constante real esperado para funcionamento da função");
+			tk.processado = true;
+			tk = analex(f);
+		}
+		
+		else if(tk.codigo == PUTCHAR){
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID && tk.cat != CT_C) error("ID ou constante char esperado para funcionamento da função");
+			tk.processado = true;
+			tk = analex(f);
+		}
+		else if(tk.codigo == PUTSTR){
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID && tk.cat != LT) error("ID ou constante string esperado para funcionamento da função");
+			tk.processado = true;
+			tk = analex(f);
+		}
+	}
 	void validarVarInit(){
 		if(tokenInfo.tipo == BOOL_ && tk.cat != CT_I) error("Erro semântico, inicialização inválida. Esperado %s", T_tipo[tokenInfo.tipo]);
 		else if((tokenInfo.tipo == INT_ || tokenInfo.tipo == CHAR_) && tk.cat == CT_R) error("Erro semântico, inicialização inválida. Esperado %s", T_tipo[tokenInfo.tipo]);

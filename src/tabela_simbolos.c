@@ -205,7 +205,7 @@ TokenInfo buscaDecl(char *lexema){
 char *geraRotulo(){
     static int count = 0;
     static char label[8];
-    snprintf(label, sizeof(label),"LBL %d",count);
+    snprintf(label, sizeof(label),"LABEL %d",count);
     count++;
     return label;
 
