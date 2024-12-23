@@ -711,7 +711,6 @@
 				printFinalizacao("Finalização de Else");
 				if(tk.codigo != ENDI) error("Esperada finalização de If");
 				printFinalizacao("Finalização de If ");
-				if(strcmp())
 				tk.processado = true;
 				tk = analex(f);
 	}
