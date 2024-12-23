@@ -554,6 +554,8 @@
 			printf("While Iniciado\n");
 			snprintf(codPilha, sizeof(codPilha), "LABEL %s\n", geraRotulo());
 			fputs(codPilha, f_out);
+			strcpy(aux.lexema, tk.lexema);
+			aux.tipo = BOOL_;
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
@@ -659,6 +661,8 @@
 	void cmdIf(){
 		printf("If iniciado\n");
 		char ifOutRotulo[20], elseRotulo[20],elifRotulo[20], codPilha[20];
+		strcpy(aux.lexema, tk.lexema);
+		aux.tipo = BOOL_;
 		tk.processado = true;
 		tk = analex(f);
 		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
@@ -678,6 +682,8 @@
 		
 			while(tk.codigo == ELIF){
 				printf("Elif iniciado\n");
+				strcpy(aux.lexema, tk.lexema);
+				aux.tipo = BOOL_;
 				tk.processado = true;
 				tk = analex(f);
 				if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
