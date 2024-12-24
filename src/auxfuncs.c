@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include "analex.h"
 #include "cores.h"
+#include "anasint.h"
     void error(char *err, ...){
         printf(_RED_);
         va_list args;
@@ -11,7 +12,7 @@
         printf("Erro: ");
         vprintf(err,args);
         va_end(args);
-        printf(" Na linha %d\n", linha);
+        printf("Na linha %d\n", linha);
         printf(_NORMAL_);
         exit(1);
     }
@@ -24,4 +25,12 @@ void printFinalizacao(char msg[]){
     printf("%s na linha %d\n", msg, linha);
 }
 
+void escreveCodigoPilha(const char* format, ...) {
+    va_list args;                    
+    char buffer[256];                
+    va_start(args, format);          
+    vsnprintf(buffer, sizeof(buffer), format, args); 
+    va_end(args);                    
+    fputs(buffer, f_out);            
+}
 

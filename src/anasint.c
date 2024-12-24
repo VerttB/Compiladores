@@ -10,14 +10,14 @@
 
 	TokenInfo tokenInfo, aux;
 
-	void opRel(){
+	int opRel(){
 		tk = analex(f);
 		if(tk.cat == SN && (tk.codigo == MAIORQUE || tk.codigo == MAIORIGUAL || 
 							tk.codigo == MENORQUE || tk.codigo == MENORIGUAL ||
 							tk.codigo == NEGACAO  || tk.codigo == DIFERENTE  ||
 							tk.codigo == IGUALDADE)){
 			tk.processado = true;
-			
+			return tk.codigo;
 		}
 		else{
 			error("Operador rel esperado");
@@ -53,16 +53,38 @@
 	}
 
 	void Expr() {
+		int codigoOp;
+		char rotulo1[20],rotulo2[20], rotulo3[20];
 		exprSimples();
 		while (tk.cat == SN && (tk.codigo == MAIORQUE || tk.codigo == MAIORIGUAL || 
 							tk.codigo == MENORQUE || tk.codigo == MENORIGUAL ||
-							tk.codigo == NEGACAO  || tk.codigo == DIFERENTE  ||
+							tk.codigo == DIFERENTE  ||
 							tk.codigo == IGUALDADE)){
 
-			opRel();
+			codigoOp = opRel();
 			exprSimples();
-
-		}
+			strcpy(rotulo1, geraRotulo());
+			strcpy(rotulo2, geraRotulo());
+			escreveCodigoPilha("SUB\n");
+			switch (codigoOp){
+			case MAIORQUE:
+				escreveCodigoPilha("GOTRUE %s\nPUSH 0\nGOTO %s\nLABEL %s\nPUSH 1\nLABEL %s\n", rotulo1, rotulo2, rotulo1, rotulo2);
+				break;
+			case MAIORIGUAL:
+				strcpy(rotulo3, geraRotulo());
+				escreveCodigoPilha("COPY\nGOTRUE %s\nGOFALSE %s\nPUSH 0\nGOTO %s\nPOP\nLABEL %s\nPUSH 1\nLABEL %s\n", rotulo1,rotulo2,rotulo3, rotulo2, rotulo3);
+				break;
+			case MENORQUE:
+				strcpy(rotulo3, geraRotulo());
+				escreveCodigoPilha("COPY\nGOFALSE %s\nGOTRUE %s\nPUSH 1\nGOTO %s\nLABEL %s\nPOP\nLABEL %s\nPUSH 0\nLABEL %s\n", rotulo1, rotulo2, rotulo3, rotulo1, rotulo2, rotulo3);
+			case DIFERENTE:
+				escreveCodigoPilha("GOFALSE %s\nPOP\nPUSH 1\nLABEL %s\n", rotulo1, rotulo1);
+			case IGUALDADE:
+				escreveCodigoPilha("COPY\nGOFALSE %s\nPUSH 0\nGOTO %s\nLABEL %s\nPUSH 1\nLABEL %s\n", rotulo1,rotulo2,rotulo1,rotulo2);
+			default:
+				break;
+			}
+	}
 	}
 
 	void exprSimples(){
@@ -75,27 +97,39 @@
 	}
 	void Resto() {
 		int codigoOp;
+		char orRotulo[20];
 		tk = analex(f);
 		if (tk.cat == SN && (tk.codigo == ADICAO || tk.codigo == SUB || tk.codigo == OR)) {
 			codigoOp = tk.codigo;
 			tk.processado = true;
+			if(codigoOp == OR){
+				strcpy(orRotulo, geraRotulo());
+				escreveCodigoPilha("COPY\nGOTRUE %s\nPOP\n", orRotulo);
+				}
 			Termo();
-				if(codigoOp == ADICAO) fputs("ADD\n", f_out);
-				else if(codigoOp == SUB) fputs("SUB\n", f_out);
+				if(codigoOp == ADICAO) escreveCodigoPilha("ADD\n");
+				else if(codigoOp == SUB) escreveCodigoPilha("SUB\n");
 			Resto();
+			if(codigoOp == OR) escreveCodigoPilha("LABEL %s\n", orRotulo);
 		}
 	}
 
 	void Sobra() {
 		int codigoOp;
+		char andRotulo[20];
 		tk = analex(f);
 		if(tk.cat == SN && (tk.codigo == MULT || tk.codigo == DIV || tk.codigo == AND)) {
 			codigoOp = tk.codigo;
 			tk.processado = true;
+			if(codigoOp == AND){
+				strcpy(andRotulo, geraRotulo());
+				escreveCodigoPilha("COPY\nGOFALSE %s\nPOP\n", andRotulo);
+			}
 			Fator();
 				if(codigoOp == MULT) fputs("MULT\n", f_out);
 				else if(codigoOp == DIV) fputs("DIV\n", f_out);
 			Sobra();
+			if(codigoOp == AND) escreveCodigoPilha("LABEL %s\n", andRotulo);
 		}
 	}
 
@@ -131,20 +165,17 @@
 		else if (tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C) {
 			if(tk.cat == CT_I){
 				if(aux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s ou %s, recebido %s", T_tipo[CHAR_], T_tipo[INT_], T_tipo[aux.tipo]);
-				snprintf(codPilha, sizeof(codPilha), "PUSH %d\n", tk.valor);
-				fputs(codPilha, f_out);
+				escreveCodigoPilha("PUSH %d\n", tk.valor);
 			}
 			else if(tk.cat == CT_R){
 				if(aux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[REAL_]);
 				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
-				snprintf(codPilha, sizeof(codPilha), "PUSHF %f\n", tk.valor_r);
-				fputs(codPilha, f_out);
+				escreveCodigoPilha("PUSHF %f\n", tk.valor_r);
 			}
 			else{
 				if(aux.tipo == REAL || aux.tipo == BOOL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[CHAR_]);
 				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
-				snprintf(codPilha, sizeof(codPilha), "PUSH %d\n", tk.c);
-				fputs(codPilha,f_out);
+				escreveCodigoPilha("PUSH %d\n", tk.c);
 			}
 			tk.processado = true; 
 			tk = analex(f);
@@ -161,10 +192,14 @@
 			}
 		}
 		else if(tk.cat == SN && tk.codigo == NEGACAO){
+			char notRotulo[20], endNotRotulo[20];
 			tk.processado = true;
 			tk = analex(f);
 			printf("NEGAÇÂO");
 			Fator();
+			strcpy(notRotulo, geraRotulo());
+			strcpy(endNotRotulo, geraRotulo());
+			escreveCodigoPilha("GOTRUE %s\nPUSH 1\nGOTO %s\nLABEL %s\nPUSH 0\nLABEL %s\n", notRotulo, endNotRotulo, notRotulo, endNotRotulo);
 		}
 		else {
 			error("Identificador, constante inteira ou abre parênteses esperado!\n");
@@ -550,10 +585,10 @@
 	}
 	
 	void cmdWhile(){
-			char codPilha[20];
+			char startWhile[20], endWhile[20];
 			printf("While Iniciado\n");
-			snprintf(codPilha, sizeof(codPilha), "LABEL %s\n", geraRotulo());
-			fputs(codPilha, f_out);
+			strcpy(startWhile, geraRotulo());
+			escreveCodigoPilha("LABEL %s\n", startWhile);
 			strcpy(aux.lexema, tk.lexema);
 			aux.tipo = BOOL_;
 			tk.processado = true;
@@ -562,6 +597,8 @@
 			tk.processado = true;
 			Expr();
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
+			strcpy(endWhile, geraRotulo());
+			escreveCodigoPilha("GOFALSE %s\n", endWhile);
 			tk.processado = true;
 			tk = analex(f);
 			while(tk.codigo != ENDW){
@@ -572,6 +609,8 @@
 				cmd();
 				tk = analex(f);
 			}
+			escreveCodigoPilha("GOTO %s\n", startWhile);
+			escreveCodigoPilha("LABEL %s\n", endWhile);
 			if(tk.codigo != ENDW) error("ENDW esperado\n");
 			printFinalizacao("While finalizado corretamente");
 			tk.processado = true;
@@ -672,7 +711,7 @@
 		tk.processado = true;
 		tk = analex(f);
 		strcpy(ifOutRotulo, geraRotulo());
-		snprintf(codPilha, sizeof(codPilha), "GOFALSE %s", ifOutRotulo);
+		escreveCodigoPilha("GOFALSE %s\n", ifOutRotulo);
 		while(tk.codigo != ELSE && tk.codigo != ELIF && tk.codigo != ENDI){
 			if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado dentro do loop WHILE");
 				tk.processado = true;

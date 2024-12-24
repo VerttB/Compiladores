@@ -17,7 +17,7 @@ void Termo();
 void Resto();
 void Sobra();
 void Fator();
-void opRel();
+int opRel();
 
 
 //Lidam com procedimentos e seus parâmetros
