@@ -93,6 +93,9 @@
 			}
 			exprValida = true;
 	}
+
+	if(!(strcmp(aux.lexema, "while") == 0 || strcmp(aux.lexema, "if") == 0 || strcmp(aux.lexema,"var") == 0 || aux.tipo == BOOL_)) exprValida = true;
+	
 	}
 
 	void exprSimples(){
@@ -599,7 +602,7 @@
 			printf("While Iniciado\n");
 			strcpy(startWhile, geraRotulo());
 			escreveCodigoPilha("LABEL %s\n", startWhile);
-			strcpy(aux.lexema, tk.lexema);
+			strcpy(aux.lexema, "while");
 			//aux.tipo = BOOL_;
 			tk.processado = true;
 			tk = analex(f);
@@ -675,6 +678,7 @@
 	}
 
 	void cmdVar(){
+			strcpy(aux.lexema, "var");
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID) error("Identificador Esperado");
@@ -706,12 +710,13 @@
 			if(tk.cat != PV_R && tk.codigo != ENDV) error("VAR: Fim do comando esperado");
 			printFinalizacao("Expressão Var finalizada com sucesso na linha");
 			tk.processado = true;
+			
 	}
 
 	void cmdIf(){
 		printf("If iniciado\n");
 		char opFalsa[20], opVerdadeira[20];
-		strcpy(aux.lexema, tk.lexema);
+		strcpy(aux.lexema, "if");
 		
 		tk.processado = true;
 		tk = analex(f);
