@@ -26,6 +26,7 @@
 
 	void Atrib() {
 		char codPilha[20];
+		int dimensaoArray = 0;
 		if (tk.cat != ID) {
 			error("Identificador esperado!\n");
 		}
@@ -34,13 +35,18 @@
 		tk.processado = true;
 		tk = analex(f);
 		while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
+			dimensaoArray++;
+			if(dimensaoArray > 2) error("Vetor de tamanho inválido");
+			if(dimensaoArray == 2 && aux.array != MATRIZ) error("Array de dimensão inválido");
 			tk.processado = true;
 			tk = analex(f);
 			Expr();
 			if(tk.cat != SN && tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 			tk.processado = true;
 			tk = analex(f);
+			
 		}
+		if(dimensaoArray == 1 && aux.array == VETOR) error("Array de dimensão inválida");
 		if (tk.cat != SN || tk.codigo != ATRIBUICAO) {
 			error("Sinal de atribuição esperado!\n");
 		}
@@ -139,9 +145,9 @@
 		if (tk.cat == ID) { 
 			TokenInfo TypesAux;
 			TypesAux = buscaDecl(tk.lexema);
-			if(aux.tipo == REAL_ && TypesAux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
-			if((aux.tipo == CHAR_ || aux.tipo == INT_ || aux.tipo == BOOL_) && TypesAux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
-			if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			if(aux.tipo == REAL_ && TypesAux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			if((aux.tipo == CHAR_ || aux.tipo == INT_ || aux.tipo == BOOL_) && TypesAux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			
 
 			snprintf(codPilha, sizeof(codPilha), "LOAD %d\n", TypesAux.endereco);
@@ -150,7 +156,6 @@
 			tk.processado = true;
 			tk = analex(f);
 			int dimensaoArray = 0;
-			aux = TypesAux;
 			while(tk.codigo == COLCHETEABERTO){
 				dimensaoArray++;
 				if(dimensaoArray > 2) error("Expr - Matriz de tamanho inválido");
