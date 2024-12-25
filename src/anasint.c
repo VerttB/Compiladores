@@ -600,12 +600,13 @@
 			strcpy(startWhile, geraRotulo());
 			escreveCodigoPilha("LABEL %s\n", startWhile);
 			strcpy(aux.lexema, tk.lexema);
-			aux.tipo = BOOL_;
+			//aux.tipo = BOOL_;
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
 			tk.processado = true;
 			Expr();
+			if(!exprValida) error("Expressão deve ser de tipo booleano. ");
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
 			strcpy(endWhile, geraRotulo());
 			escreveCodigoPilha("GOFALSE %s\n", endWhile);
@@ -709,28 +710,30 @@
 
 	void cmdIf(){
 		printf("If iniciado\n");
-		char ifOutRotulo[20], elseRotulo[20],elifRotulo[20], codPilha[20];
+		char opFalsa[20], opVerdadeira[20];
 		strcpy(aux.lexema, tk.lexema);
-		//aux.tipo = BOOL_;
+		
 		tk.processado = true;
 		tk = analex(f);
-		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
+		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses. ");
 		tk.processado = true;
 		Expr();
-		if(!exprValida) error("Expressão deve ser de tipo booleano");
-		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
+		if(!exprValida) error("Expressão deve ser de tipo booleano. ");
+		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado. ");
 		tk.processado = true;
 		tk = analex(f);
-		strcpy(ifOutRotulo, geraRotulo());
-		escreveCodigoPilha("GOFALSE %s\n", ifOutRotulo);
+		strcpy(opFalsa, geraRotulo());
+		escreveCodigoPilha("GOFALSE %s\n", opFalsa);
 		while(tk.codigo != ELSE && tk.codigo != ELIF && tk.codigo != ENDI){
-			if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado dentro do loop WHILE");
+			if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado. ");
 				tk.processado = true;
 				cmd();
 				tk = analex(f);
 			}
-		
+		strcpy(opVerdadeira, geraRotulo());
+		escreveCodigoPilha("GOTO %s\n", opVerdadeira);
 			while(tk.codigo == ELIF){
+				escreveCodigoPilha("LABEL %s\n", opFalsa);
 				printf("Elif iniciado\n");
 				strcpy(aux.lexema, tk.lexema);
 				aux.tipo = BOOL_;
@@ -742,17 +745,19 @@
 				if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
 				tk.processado = true;
 				tk = analex(f);
+				strcpy(opFalsa, geraRotulo());
+				escreveCodigoPilha("GOFALSE %s\n", opFalsa);
 				while(tk.codigo != ELIF && tk.codigo != ELSE && tk.codigo != ENDI){
 					if (tk.cat == FIM_ARQ) error("Fim do arquivo inesperado dentro do loop WHILE");
 						tk.processado = true;
 						cmd();
 						tk = analex(f);
 					}
+				escreveCodigoPilha("GOTO %s\n", opVerdadeira);
 					printFinalizacao("Elif finalizado ");	
 				}
-				snprintf(codPilha, sizeof(codPilha), "GOTO %s", ifOutRotulo);
 				if(tk.codigo == ELSE){
-					strcpy(elseRotulo, geraRotulo());
+					escreveCodigoPilha("LABEL %s\n", opFalsa);
 					
 					printf("Else iniciado\n");
 					tk.processado = true;
@@ -763,6 +768,7 @@
 						cmd();
 						tk = analex(f);
 					}
+					escreveCodigoPilha("LABEL %s\n", opVerdadeira);
 				}
 				printFinalizacao("Finalização de Else");
 				if(tk.codigo != ENDI) error("Esperada finalização de If");

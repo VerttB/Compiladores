@@ -1,11 +1,10 @@
 
-def teste()
-    int c
-endp
-
 def init
-   while(1 && 1 || 1 && !1)
-       
-   endw
+    int a,b,c
+    if(1)
+    elif(2)
+    elif(3)
+    else
+    endi
 
 endp
