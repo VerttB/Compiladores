@@ -40,3 +40,7 @@
 
 - [x] Estrutura máxima suportada é matriz
 - [x] Constantes devem ser inicializadas em sua declaração
+
+## Pessoal
+
+- [] Lembrar de por pro exprValida funcionar quando for atribuir boolean

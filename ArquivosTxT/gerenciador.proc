@@ -17,7 +17,7 @@ def listarTarefas()
     int i = 0
     char tarefa[MAX_LETTERS]
     while(i < MAX_TAM_TAREFAS)
-    if(tarefas[index][0] == ' ') 
+    if(1) 
         getout
     endi
     tarefa = tarefas[i]
@@ -44,7 +44,7 @@ def criarTarefa()
         elif(tarefa == 0) 
             getout
         else
-            do adicionarTarefa(tarefa, dias, prioridade)
+            do adicionarTarefa(tarefa)
             getout
         endi
     endw
