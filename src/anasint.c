@@ -294,7 +294,7 @@
 		}
 	}
 
-	void declListVar(){
+	int declListVar(){
 		int countVar = 0;
 		char codPilha[20];
 		tokenInfo.ehConst = NORMAL;
@@ -317,7 +317,7 @@
 				declVar();
 				countVar++;
 			}
-
+		return countVar;
 	}
 	void tipo(){
 		if(tk.cat == PV_R && (tk.codigo == INT || tk.codigo == REAL || tk.codigo == BOOL || tk.codigo == CHAR)){
@@ -404,6 +404,8 @@
 			printFinalizacao("Prot finalizado ");
 		} 
 		else if(tk.codigo == DEF){
+			resetTokenInfo(&tokenInfo);
+			int qtdVariaveis = 0;
 			tokenInfo.idcategoria = PROC;
 			tk.processado = true;
 			tk = analex(f);
@@ -420,9 +422,9 @@
 				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 					tokenInfo.escopo = LOCAL;
 					tokenInfo.idcategoria = VAR_LOCAL;
-					declListVar();
+					qtdVariaveis = qtdVariaveis + declListVar();
 				}
-
+				if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
 				while(tk.cat == PV_R || tk.cat == ID){
 					if(tk.codigo == ENDP) break;
 					tk.processado = true;
@@ -435,12 +437,14 @@
 			tk.processado = true;
 			tk = analex(f);
 			printFinalizacao("Init finalizado ");
+			if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
+
 			}
 			else if(tk.cat == ID){
 				char idRotulo[20];
-				printf("Def %s inicializado\n", tk.lexema);
-				int pos;
 				char lexema[32];
+				int pos;
+				printf("Def %s inicializado\n", tk.lexema);
 				strncpy(lexema, tk.lexema, sizeof(lexema) - 1); 
 				lexema[sizeof(lexema) - 1] = '\0';
 				if((pos = buscaLexPos(tk.lexema)) == -1){
@@ -501,8 +505,9 @@
 				tk = analex(f);
 				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 					tokenInfo.idcategoria = VAR_LOCAL;
-					declListVar();
+					qtdVariaveis = qtdVariaveis + declListVar();
 				}
+				if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
 				while(tk.cat == PV_R || tk.cat == ID){
 					if(tk.codigo == ENDP) break;
 					tk.processado = true;
@@ -517,6 +522,8 @@
 				printFinalizacao("Finalização de DEF ID");
 				matarZumbis(buscaLexPos(lexema));
 				retirarLocais();
+				if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
+
 			}
 			
 			else error("Inicializador ou identificador esperado");
@@ -838,15 +845,17 @@
 	}
 
 	void prog(){
-		
+		int qtdVariaveis = 0;
 		while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
 		tokenInfo.escopo = GLOBAL;
 		tokenInfo.idcategoria = VAR_GLOBAL;
-			declListVar();
+			qtdVariaveis = qtdVariaveis + declListVar();
 		}
+		if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
 		while(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)){
 			declDefProc();
 		}
+		if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
 	}
 	void testeSint(char *p) {
 		if ((f=fopen(p, "r")) == NULL)

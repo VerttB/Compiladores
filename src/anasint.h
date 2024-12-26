@@ -35,7 +35,7 @@ void cmdVar();
 void cmdIf();
 //Lidam com inicialização de variaveis e arrays
 void declVar();
-void declListVar();
+int declListVar();
 void tipo();
 void varInit(); 
 void validarVarInit();

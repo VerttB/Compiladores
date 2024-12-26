@@ -1,4 +1,4 @@
-
+int a,c,d
 def init
     int a,b,c
     if(1)
