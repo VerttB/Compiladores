@@ -1,0 +1,16 @@
+int x,y
+
+def p()
+    int z
+    z = x
+    x = x - 1
+    if(z>1) do p()
+    else y = 1
+    endi
+    y = y * z
+endp
+
+def init
+    x = 0
+    do p()
+endp

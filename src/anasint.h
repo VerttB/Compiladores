@@ -22,7 +22,9 @@ int opRel();
 
 //Lidam com procedimentos e seus parâmetros
 void prog();
-void declDefProc();
+void declProc();
+void declProt();
+void declDef();
 void param();
 
 // Lidam com os comandos

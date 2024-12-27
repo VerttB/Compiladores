@@ -10,6 +10,7 @@
 
 	TokenInfo tokenInfo, aux;
 	bool exprValida = true;
+	int tokenEndereco = 0;
 
 	int opRel(){
 		tk = analex(f);
@@ -20,9 +21,9 @@
 			tk.processado = true;
 			return tk.codigo;
 		}
-		else{
-			error("Operador rel esperado");
-		}
+		error("Operador rel esperado");
+		return -1;
+	
 	}
 
 	void Atrib() {
@@ -54,7 +55,7 @@
 		tk.processado = true;
 
 		Expr();
-		snprintf(codPilha, sizeof(codPilha), "STOR %d\n", aux.endereco);
+		snprintf(codPilha, sizeof(codPilha), "STOR %d,%d\n", (aux.escopo == GLOBAL ? 0 : 1) ,aux.endereco);
 		fputs(codPilha, f_out);
 
 	}
@@ -155,7 +156,7 @@
 			//if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
 
-			snprintf(codPilha, sizeof(codPilha), "LOAD %d\n", TypesAux.endereco);
+			snprintf(codPilha, sizeof(codPilha), "LOAD %d,%d\n", (TypesAux.escopo == GLOBAL ? 0 : 1), TypesAux.endereco);
 			fputs(codPilha, f_out);
 			
 			tk.processado = true;
@@ -207,7 +208,6 @@
 			char notRotulo[20], endNotRotulo[20];
 			tk.processado = true;
 			tk = analex(f);
-			printf("NEGAÇÂO");
 			Fator();
 			strcpy(notRotulo, geraRotulo());
 			strcpy(endNotRotulo, geraRotulo());
@@ -254,7 +254,8 @@
 					arrayInit();
 					defineTipoArray(dimensaoArray);
 			}
-			
+			tokenInfo.endereco = tokenEndereco;
+			tokenEndereco++;
 			inserirNaTabela(tokenInfo); //Insere as declarações de variável
 		}
 
@@ -333,8 +334,6 @@
 		}
 	}
 	void cmd(){
-		printTokenDados();
-		char codPilha[20];
 		if(tk.cat != PV_R && tk.cat != ID) error("CMD - Identificador ou palavra chave esperado");
 		if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida"); //Inválido se for DEF ou PROT
 		if(tk.codigo == DO) cmdDo();
@@ -349,7 +348,7 @@
 		
 	}
 
-	void declDefProc(){
+	void declProc(){
 		if(tk.cat != PV_R) error("Inicializador de Função esperado");
 			char codPilha[20];
 			tokenInfo.array = NA_ARRAY;
@@ -360,174 +359,8 @@
 			tokenInfo.tipo = NA_TIPO;
 			tokenInfo.idcategoria = PROC;
 			tk.processado = true;
-		if(tk.codigo == PROT){
-			tokenInfo.idcategoria = PROT_;
-			printf("Prot incializado e ");
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != ID) error("Identificador esperado");
-			if(strcmp(tk.lexema,"Init") == 0) error("%s não pode ser utilizado para criação de protótipo", tk.lexema);
-			if(buscaLexPos(tk.lexema) != -1) error("Protótipo %s definido após sua definição", tk.lexema);
-			strcpy(tokenInfo.lexema, tk.lexema);
-			inserirNaTabela(tokenInfo); //Inserção do PROC PROT
-			resetTokenInfo(&tokenInfo);
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
-			tk.processado = true;
-			tk = analex(f);
-			if(!(tk.cat == SN && tk.codigo == PARENTESEFECHADO)){
-			do{
-				if(tk.cat == SN && tk.codigo == VIRGULA){
-					tk.processado = true;
-					tk = analex(f);
-				}
-				tokenInfo.zumbi = NA_ZUMBI;
-				param();
-				int dimensaoArray = 0;
-				while(tk.codigo == COLCHETEABERTO){
-					dimensaoArray++;
-					if(dimensaoArray > 2) error("PROT - Tamanho de array inválido");
-					tk.processado = true;
-					tk = analex(f);
-					if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
-					tk.processado = true;
-					tk = analex(f);
-				}
-			defineTipoArray(dimensaoArray);
-			inserirNaTabela(tokenInfo);
-			}while(tk.cat == SN && tk.codigo == VIRGULA);
-		}
-			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado");
-			tk.processado = true;
-			tk = analex(f);
-			printFinalizacao("Prot finalizado ");
-		} 
-		else if(tk.codigo == DEF){
-			resetTokenInfo(&tokenInfo);
-			int qtdVariaveis = 0;
-			tokenInfo.idcategoria = PROC;
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat == PV_R && tk.codigo == INIT){
-				char initRotulo[20];
-				printf("Init inicializado");
-				strcpy(tokenInfo.lexema, "Init");
-				inserirNaTabela(tokenInfo);
-				strcpy(initRotulo, buscaDecl(tokenInfo.lexema).rotulo);
-				tk.processado = true;
-				tk = analex(f);
-				snprintf(codPilha, sizeof(codPilha), "LABEL %s\n", initRotulo);
-				fputs(codPilha, f_out);
-				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
-					tokenInfo.escopo = LOCAL;
-					tokenInfo.idcategoria = VAR_LOCAL;
-					qtdVariaveis = qtdVariaveis + declListVar();
-				}
-				if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
-				while(tk.cat == PV_R || tk.cat == ID){
-					if(tk.codigo == ENDP) break;
-					tk.processado = true;
-					cmd();
-					tk = analex(f);
-					tk.processado = true;
-				}
-			if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
-			retirarLocais();
-			tk.processado = true;
-			tk = analex(f);
-			printFinalizacao("Init finalizado ");
-			if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
-
-			}
-			else if(tk.cat == ID){
-				char idRotulo[20];
-				char lexema[32];
-				int pos;
-				printf("Def %s inicializado\n", tk.lexema);
-				strncpy(lexema, tk.lexema, sizeof(lexema) - 1); 
-				lexema[sizeof(lexema) - 1] = '\0';
-				if((pos = buscaLexPos(tk.lexema)) == -1){
-					strcpy(tokenInfo.lexema, tk.lexema);
-					inserirNaTabela(tokenInfo);
-					strcpy(idRotulo, buscaDecl(tokenInfo.lexema).rotulo);
-				}
-				else{
-					tabela.tokensTab[pos].idcategoria = PROC;
-					strcpy(idRotulo, tabela.tokensTab[pos].rotulo);
-				}
-				snprintf(codPilha, sizeof(codPilha), "LABEL %s\n", idRotulo);
-				fputs(codPilha, f_out);
-				tk.processado = true;
-				tk = analex(f);
-				if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
-				tk.processado = true;
-				tk = analex(f);
-				if(!(tk.cat == SN && tk.codigo == PARENTESEFECHADO)){
-					do{
-					if(tk.cat == SN && tk.codigo == VIRGULA){
-							tk.processado = true;
-							tk = analex(f);
-						}
-					tokenInfo.zumbi = VIVO;
-					param();
-					if(tk.cat != ID) error("PROC ID = Identificador Esperado");
-					strcpy(tokenInfo.lexema, tk.lexema);
-					tk.processado = true;
-					tk = analex(f);
-					int dimensaoArray = 0;
-					while(tk.codigo == COLCHETEABERTO){
-						dimensaoArray++;
-						if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
-						tk.processado = true;
-						tk = analex(f);
-						insereDimensaoArray(dimensaoArray);
-						if(strcmp(tk.lexema, tokenInfo.lexema) == 0) error("Parâmetro não pode ser utilizado para tamanho de seu próprio vetor/matriz");
-						tk.processado = true;
-						tk = analex(f);
-						if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
-						tk.processado = true;
-						tk = analex(f);
-					}
-					defineTipoArray(dimensaoArray);
-					if(pos == -1) inserirNaTabela(tokenInfo); //Se a pos é -1 quer dizer que proc foi a ultima coisa inserida
-					else{
-						inserirVazios(pos, tokenInfo);
-					}
-					tokenInfo.arrayDim[0] = 0;
-					tokenInfo.arrayDim[1] = 0;
-					}while(tk.codigo == VIRGULA && tk.cat == SN);
-
-					verificaFaltaParam(buscaLexPos(lexema));
-			}
-			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("PROC ID - Fechamento de parenteses esperado");
-			tk.processado = true;
-				tk = analex(f);
-				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
-					tokenInfo.idcategoria = VAR_LOCAL;
-					qtdVariaveis = qtdVariaveis + declListVar();
-				}
-				if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
-				while(tk.cat == PV_R || tk.cat == ID){
-					if(tk.codigo == ENDP) break;
-					tk.processado = true;
-					cmd();
-					tk = analex(f);
-					tk.processado = true;
-				}
-
-			if(tk.cat != PV_R && tk.codigo != ENDP) error("Finalização de procedimento id esperado");
-				tk.processado = true;
-				tk = analex(f);
-				printFinalizacao("Finalização de DEF ID");
-				matarZumbis(buscaLexPos(lexema));
-				retirarLocais();
-				if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
-
-			}
-			
-			else error("Inicializador ou identificador esperado");
-		}
+		if(tk.codigo == PROT) declProt();
+		else if(tk.codigo == DEF) declDef();
 	}
 	void param(){
 		tokenInfo.idcategoria = PROC_PAR;
@@ -606,7 +439,6 @@
 	
 	void cmdWhile(){
 			char startWhile[20], endWhile[20];
-			printf("While Iniciado\n");
 			strcpy(startWhile, geraRotulo());
 			escreveCodigoPilha("LABEL %s\n", startWhile);
 			strcpy(aux.lexema, "while");
@@ -633,7 +465,6 @@
 			escreveCodigoPilha("GOTO %s\n", startWhile);
 			escreveCodigoPilha("LABEL %s\n", endWhile);
 			if(tk.codigo != ENDW) error("ENDW esperado\n");
-			printFinalizacao("While finalizado corretamente");
 			tk.processado = true;
 			tk = analex(f);
 	}
@@ -680,7 +511,7 @@
 			tk.processado = true;
 			tk = analex(f);
 		}
-		snprintf(codPilha, sizeof(codPilha), "STOR %d\n", aux.endereco);
+		snprintf(codPilha, sizeof(codPilha), "STOR %d,%d\n", (aux.escopo == GLOBAL ? 0 : 1), aux.endereco);
 		fputs(codPilha, f_out);
 	}
 
@@ -715,13 +546,11 @@
 				tk = analex(f);
 			}
 			if(tk.cat != PV_R && tk.codigo != ENDV) error("VAR: Fim do comando esperado");
-			printFinalizacao("Expressão Var finalizada com sucesso na linha");
 			tk.processado = true;
 			
 	}
 
 	void cmdIf(){
-		printf("If iniciado\n");
 		char opFalsa[20], opVerdadeira[20];
 		strcpy(aux.lexema, "if");
 		
@@ -746,7 +575,6 @@
 		escreveCodigoPilha("GOTO %s\n", opVerdadeira);
 			while(tk.codigo == ELIF){
 				escreveCodigoPilha("LABEL %s\n", opFalsa);
-				printf("Elif iniciado\n");
 				strcpy(aux.lexema, tk.lexema);
 				aux.tipo = BOOL_;
 				tk.processado = true;
@@ -766,12 +594,10 @@
 						tk = analex(f);
 					}
 				escreveCodigoPilha("GOTO %s\n", opVerdadeira);
-					printFinalizacao("Elif finalizado ");	
 				}
 				if(tk.codigo == ELSE){
 					escreveCodigoPilha("LABEL %s\n", opFalsa);
 					
-					printf("Else iniciado\n");
 					tk.processado = true;
 					tk = analex(f);
 					while(tk.codigo != ENDI){
@@ -782,9 +608,7 @@
 					}
 					escreveCodigoPilha("LABEL %s\n", opVerdadeira);
 				}
-				printFinalizacao("Finalização de Else");
 				if(tk.codigo != ENDI) error("Esperada finalização de If");
-				printFinalizacao("Finalização de If ");
 				tk.processado = true;
 				tk = analex(f);
 	}
@@ -844,6 +668,177 @@
     }
 	}
 
+	void declProt(){
+		tokenInfo.idcategoria = PROT_;
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != ID) error("Identificador esperado");
+			if(strcmp(tk.lexema,"Init") == 0) error("%s não pode ser utilizado para criação de protótipo", tk.lexema);
+			if(buscaLexPos(tk.lexema) != -1) error("Protótipo %s definido após sua definição", tk.lexema);
+			strcpy(tokenInfo.lexema, tk.lexema);
+			inserirNaTabela(tokenInfo); //Inserção do PROC PROT
+			resetTokenInfo(&tokenInfo);
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
+			tk.processado = true;
+			tk = analex(f);
+			if(!(tk.cat == SN && tk.codigo == PARENTESEFECHADO)){
+			do{
+				if(tk.cat == SN && tk.codigo == VIRGULA){
+					tk.processado = true;
+					tk = analex(f);
+				}
+				tokenInfo.zumbi = NA_ZUMBI;
+				param();
+				int dimensaoArray = 0;
+				while(tk.codigo == COLCHETEABERTO){
+					dimensaoArray++;
+					if(dimensaoArray > 2) error("PROT - Tamanho de array inválido");
+					tk.processado = true;
+					tk = analex(f);
+					if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+					tk.processado = true;
+					tk = analex(f);
+				}
+			defineTipoArray(dimensaoArray);
+			inserirNaTabela(tokenInfo);
+			}while(tk.cat == SN && tk.codigo == VIRGULA);
+		}
+			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado");
+			tk.processado = true;
+			tk = analex(f);
+	}
+
+	void declDef(){
+		char codPilha[40];
+		int qtdVariaveis = 0;
+		tokenEndereco = 0;
+		resetTokenInfo(&tokenInfo);
+		tokenInfo.idcategoria = PROC;
+			tk.processado = true;
+			tk = analex(f);
+			if(tk.cat == PV_R && tk.codigo == INIT){
+				char initRotulo[20];
+				strcpy(tokenInfo.lexema, "Init");
+				inserirNaTabela(tokenInfo);
+				strcpy(initRotulo, buscaDecl(tokenInfo.lexema).rotulo);
+				tk.processado = true;
+				tk = analex(f);
+				escreveCodigoPilha("LABEL %s\n", initRotulo);
+				escreveCodigoPilha("INIPR 1\n");
+				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
+					tokenInfo.escopo = LOCAL;
+					tokenInfo.idcategoria = VAR_LOCAL;
+					qtdVariaveis = qtdVariaveis + declListVar();
+				}
+				if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
+				while(tk.cat == PV_R || tk.cat == ID){
+					if(tk.codigo == ENDP) break;
+					tk.processado = true;
+					cmd();
+					tk = analex(f);
+					tk.processado = true;
+				}
+			if(tk.codigo != ENDP) error("Finalização de procedimento init esperado");
+			retirarLocais();
+			tk.processado = true;
+			tk = analex(f);
+			if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
+
+			}
+			else if(tk.cat == ID){
+
+				char idRotulo[20];
+				char lexema[32];
+				int pos, qtdParametros = 0;
+				strncpy(lexema, tk.lexema, sizeof(lexema) - 1); 
+				lexema[sizeof(lexema) - 1] = '\0';
+				if((pos = buscaLexPos(tk.lexema)) == -1){
+					strcpy(tokenInfo.lexema, tk.lexema);
+					inserirNaTabela(tokenInfo);
+					strcpy(idRotulo, buscaDecl(tokenInfo.lexema).rotulo);
+				}
+				else{
+					tabela.tokensTab[pos].idcategoria = PROC;
+					strcpy(idRotulo, tabela.tokensTab[pos].rotulo);
+				}
+				
+				escreveCodigoPilha("LABEL %s\n", idRotulo);
+				escreveCodigoPilha("INIPR 1\n");
+				tk.processado = true;
+				tk = analex(f);
+				if(tk.cat != SN && tk.codigo != PARENTESEABERTO) error("Abertura de parenteses esperado");
+				tk.processado = true;
+				tk = analex(f);
+				if(!(tk.cat == SN && tk.codigo == PARENTESEFECHADO)){
+					do{
+					if(tk.cat == SN && tk.codigo == VIRGULA){
+							tk.processado = true;
+							tk = analex(f);
+						}
+					tokenInfo.zumbi = VIVO;
+					param();
+					if(tk.cat != ID) error("PROC ID = Identificador Esperado");
+					strcpy(tokenInfo.lexema, tk.lexema);
+					tk.processado = true;
+					tk = analex(f);
+					int dimensaoArray = 0;
+					while(tk.codigo == COLCHETEABERTO){
+						dimensaoArray++;
+						if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
+						tk.processado = true;
+						tk = analex(f);
+						insereDimensaoArray(dimensaoArray);
+						if(strcmp(tk.lexema, tokenInfo.lexema) == 0) error("Parâmetro não pode ser utilizado para tamanho de seu próprio vetor/matriz");
+						tk.processado = true;
+						tk = analex(f);
+						if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+						tk.processado = true;
+						tk = analex(f);
+					}
+					defineTipoArray(dimensaoArray);
+					
+					if(pos == -1) inserirNaTabela(tokenInfo); //Se a pos é -1 quer dizer que proc foi a ultima coisa inserida
+					else{
+						inserirVazios(pos, tokenInfo);
+					}
+					qtdParametros++;
+					tokenInfo.arrayDim[0] = 0;
+					tokenInfo.arrayDim[1] = 0;
+					}while(tk.codigo == VIRGULA && tk.cat == SN);
+					aplicaEnderecoParam(pos, qtdParametros);
+					verificaFaltaParam(buscaLexPos(lexema));
+			}
+			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("PROC ID - Fechamento de parenteses esperado");
+			tk.processado = true;
+				tk = analex(f);
+				while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
+					tokenInfo.idcategoria = VAR_LOCAL;
+					tokenInfo.escopo = LOCAL;
+					qtdVariaveis = qtdVariaveis + declListVar();
+				}
+				if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
+				while(tk.cat == PV_R || tk.cat == ID){
+					if(tk.codigo == ENDP) break;
+					tk.processado = true;
+					cmd();
+					tk = analex(f);
+					tk.processado = true;
+				}
+
+			if(tk.cat != PV_R && tk.codigo != ENDP) error("Finalização de procedimento id esperado");
+				tk.processado = true;
+				tk = analex(f);
+				matarZumbis(buscaLexPos(lexema));
+				retirarLocais();
+				if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
+				escreveCodigoPilha("RET %d\n", qtdParametros + 2);
+
+			}
+			
+			else error("Inicializador ou identificador esperado");
+	}
 	void prog(){
 		int qtdVariaveis = 0;
 		while(tk.cat == PV_R && (tk.codigo == CONST || tk.codigo == INT || tk.codigo == CHAR || tk.codigo == BOOL || tk.codigo == REAL)){
@@ -851,9 +846,10 @@
 		tokenInfo.idcategoria = VAR_GLOBAL;
 			qtdVariaveis = qtdVariaveis + declListVar();
 		}
+		resetTokenInfo(&tokenInfo);
 		if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
 		while(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)){
-			declDefProc();
+			declProc();
 		}
 		if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
 	}
@@ -865,6 +861,11 @@
 		tk.processado = true;
 		tk = analex(f);
 		prog();
+		for (int i = 0; i < tabela.topo; i++) {
+        if (tabela.tokensTab[i].idcategoria == PROT) {
+            error("PROT sem definicao encontrado");
+			}
+		}
 			if (tk.cat == FIM_ARQ) {
 			printf("\n------------------------------------\n");
 			printf("Fim do arquivo %s", p);

@@ -87,4 +87,5 @@ void retirarLocais();
 TokenInfo buscaDecl(char *);
 char *geraRotulo();
 void contaParam(int, int*);
+void aplicaEnderecoParam(int,int);
 #endif

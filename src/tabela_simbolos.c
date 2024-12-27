@@ -56,7 +56,6 @@ char *T_ehConst[] = {
 
 void inserirNaTabela(TokenInfo token){
     buscaDeclRep(token); // Verifica Repetição de lexema
-    token.endereco = tabela.topo;
     if(token.idcategoria == PROT_ || token.idcategoria == PROC) strcpy(token.rotulo, geraRotulo());
     tabela.tokensTab[tabela.topo] = token;
     tabela.topo++;
@@ -114,7 +113,8 @@ void printarTabela(int pos){
         else{
             printf("│%-8s", "N/A");
         }
-        printf("│%-8d", aux.endereco);
+        if(aux.idcategoria == PROT_ || aux.idcategoria == PROC || strcmp(aux.lexema, "") ==0) printf("│%-8c", '-');
+        else printf("│%-8d", aux.endereco);
         printf("│%-9s", T_IdCategoria[aux.idcategoria]);
         printf("│%-8s", aux.rotulo);
         printf("%s│",_NORMAL_);
@@ -153,6 +153,7 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
         if(strcmp(tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){aux = tabela.tokensTab[i]; auxNum = i; break;}
         if(tabela.tokensTab[i].idcategoria != PROC_PAR) error("Quantidade de parâmetros inválida");
     }
+
     if(auxNum == 0) error("Quantidade de argumentos inválida");
     //if(aux.idcategoria != tokenInfo.idcategoria) error("Quantidade de parâmetros inválida");
     if(strcmp(aux.lexema, "") != 0) error("Quantidade de argumentos inválida");
@@ -219,4 +220,13 @@ void contaParam(int pos, int *qtd){
         pos++;
         (*qtd)++;
     }
+}
+
+void aplicaEnderecoParam(int pos, int qtdParam){
+    if(pos == -1) pos++;
+    int posicaoParametro = pos+1;
+    for(int i = qtdParam-1; i >= 0; i--){
+		tabela.tokensTab[posicaoParametro+i].endereco = -3-i;
+        printarTabela(posicaoParametro+i);
+		}
 }
