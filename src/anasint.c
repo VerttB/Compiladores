@@ -11,6 +11,7 @@
 	TokenInfo tokenInfo, aux;
 	bool exprValida = true;
 	int tokenEndereco = 0;
+	int tipoExpressao;
 
 	int opRel(){
 		tk = analex(f);
@@ -80,15 +81,21 @@
 				break;
 			case MAIORIGUAL:
 				strcpy(rotulo3, geraRotulo());
-				escreveCodigoPilha("COPY\nGOTRUE %s\nGOFALSE %s\nPUSH 0\nGOTO %s\nPOP\nLABEL %s\nPUSH 1\nLABEL %s\n", rotulo1,rotulo2,rotulo3, rotulo2, rotulo3);
+				escreveCodigoPilha("COPY\nGOFALSE %s\nGOTRUE %s\nPUSH 0\nGOTO %s\nLABEL %s\nPOP\nLABEL %s\nPUSH 1\nLABEL %s", rotulo1,rotulo2,rotulo3, rotulo2, rotulo3);
 				break;
 			case MENORQUE:
 				strcpy(rotulo3, geraRotulo());
-				escreveCodigoPilha("COPY\nGOFALSE %s\nGOTRUE %s\nPUSH 1\nGOTO %s\nLABEL %s\nPOP\nLABEL %s\nPUSH 0\nLABEL %s\n", rotulo1, rotulo2, rotulo3, rotulo1, rotulo2, rotulo3);
+				escreveCodigoPilha("COPY\nGOTRUE %s\nGOFALSE %s\nPUSH 1\nGOTO %s\nLABEL %s\nPOP\nLABEL %s\nPUSH 0\nLABEL %s", rotulo1, rotulo2, rotulo3, rotulo1, rotulo2, rotulo3);
+				break;
 			case DIFERENTE:
-				escreveCodigoPilha("GOFALSE %s\nPOP\nPUSH 1\nLABEL %s\n", rotulo1, rotulo1);
+				escreveCodigoPilha("GOFALSE %s\nPUSH 1\nGOTO %s\nLABEL %S\nPUSH 0\nLABEL %s", rotulo1,rotulo2, rotulo1, rotulo2);
+				break;
 			case IGUALDADE:
-				escreveCodigoPilha("COPY\nGOFALSE %s\nPUSH 0\nGOTO %s\nLABEL %s\nPUSH 1\nLABEL %s\n", rotulo1,rotulo2,rotulo1,rotulo2);
+				escreveCodigoPilha("GOFALSE %s\nPUSH 0\nGOTO %s\nLABEL %s\nPUSH 1\nLABEL %s\n", rotulo1,rotulo2,rotulo1,rotulo2);
+				break;
+			case MENORIGUAL:
+				escreveCodigoPilha("GOTRUE %s\nPUSH 1\nGOTO %s\nLABEL %s\nPUSH 0\nLABEL %s\n", rotulo1,rotulo2,rotulo1,rotulo2);
+				break;
 			default:
 				break;
 			}
@@ -156,8 +163,7 @@
 			//if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
 
-			snprintf(codPilha, sizeof(codPilha), "LOAD %d,%d\n", (TypesAux.escopo == GLOBAL ? 0 : 1), TypesAux.endereco);
-			fputs(codPilha, f_out);
+			escreveCodigoPilha("LOAD %d,%d", (TypesAux.escopo == GLOBAL ? 0 : 1), TypesAux.endereco);
 			
 			tk.processado = true;
 			tk = analex(f);
@@ -179,13 +185,13 @@
 				escreveCodigoPilha("PUSH %d\n", tk.valor);
 			}
 			else if(tk.cat == CT_R){
-				if(aux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[REAL_]);
+				if(aux.tipo != REAL_ && !exprValida) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[REAL_]);
 				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
 				exprValida = false;
 				escreveCodigoPilha("PUSHF %f\n", tk.valor_r);
 			}
 			else{
-				if(aux.tipo == REAL /* || aux.tipo == BOOL_ */) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[CHAR_]);
+				if(aux.tipo == REAL) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[CHAR_]);
 				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
 				exprValida = false;
 				escreveCodigoPilha("PUSH %d\n", tk.c);
@@ -617,23 +623,41 @@
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID && tk.cat != CT_I) error("ID ou constante inteira esperado para funcionamento da função");
+			if(tk.cat == ID){
+				aux = buscaDecl(tk.lexema);
+				escreveCodigoPilha("LOAD %d, %d\n", aux.escopo,aux.endereco);
+			}
+			else escreveCodigoPilha("PUSH %d", tk.valor);
 			tk.processado = true;
 			tk = analex(f);
+			escreveCodigoPilha("PUT_I\n");
 		}
 		else if(tk.codigo == PUTREAL){
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID && tk.cat != CT_R) error("ID ou constante real esperado para funcionamento da função");
+			if(tk.cat == ID){
+				aux = buscaDecl(tk.lexema);
+				escreveCodigoPilha("LOAD %d, %d\n", aux.escopo,aux.endereco);
+			}
+			else escreveCodigoPilha("PUSHF %f\n", tk.valor_r);
 			tk.processado = true;
 			tk = analex(f);
+			escreveCodigoPilha("PUT_F\n");
 		}
 		
 		else if(tk.codigo == PUTCHAR){
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID && tk.cat != CT_C) error("ID ou constante char esperado para funcionamento da função");
+			if(tk.cat == ID){
+				aux = buscaDecl(tk.lexema);
+				escreveCodigoPilha("LOAD %d, %d\n", aux.escopo,aux.endereco);
+			}
+			else escreveCodigoPilha("PUSH %d\n", tk.c);
 			tk.processado = true;
 			tk = analex(f);
+			escreveCodigoPilha("PUT_C\n");
 		}
 		else if(tk.codigo == PUTSTR){
 			tk.processado = true;

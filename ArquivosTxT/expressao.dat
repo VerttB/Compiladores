@@ -3,7 +3,7 @@ def init
     int a,b,c
     a = 2
     d = 10
-    if(1)
+    if(2.5)
     elif(2)
     elif(3)
     else

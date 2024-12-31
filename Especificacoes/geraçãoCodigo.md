@@ -66,7 +66,11 @@
 |        LABEL LZ       |           -           |
 |          POP          |           -           |
 
-WHILE - PRINTS TEM QUE SER NESSA ORDEM, GUARDAR LX e LY EM VARIAVEL
+| A > B  | A < B  | A != B  | A == B  | A >= B  | A <= B  |
+|--- |--- |--- |--- |--- |--- |
+| LOAD A<br>LOAD B<br>SUB<br>GOTRUE LX<br>PUSH 0<br>GOTO LY<br>LABEL LX<br>PUSH 1<br>LABEL LY  | LOAD A<br>LOAD B<br>SUB<br>COPY<br>GOTRUE LX<br>GOFALSE LY<br>PUSH 1<br>GOTO LZ<br>LABEL LX<br>POP<br>LABEL LY<br>PUSH 0<br>LABEL LZ  | LOAD A<br>LOAD B<br>SUB<br>GOFALSE LX<br>PUSH 1<br>GOTO LY<br>LABEL LX<br>PUSH 0<br>LABEL LY  | LOAD A<br>LOAD B<br>SUB<br>GOFALSE LX<br>PUSH 0<br>GOTO LY<br>LABEL LX<br>PUSH 1<br>LABEL LY  | LOAD A<br>LOAD B<br>SUB<br>COPY<br>GOFALSE LX<br>GOTRUE LY<br>PUSH 0<br>GOTO LZ<br>LABEL LX<br>POP<br>LABEL LY<br>PUSH 1<br>LABEL LZ  | LOAD A<br>LOAD B<br>SUB<br>GOTRUE LX<br>PUSH 1<br>GOTO LY<br>LABEL LX<br>PUSH 0<br>LABEL LY  |
+
+WHILE
 LABEL LX 
 EXP
 GOFALSE LY
