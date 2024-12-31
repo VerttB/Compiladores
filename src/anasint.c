@@ -28,7 +28,7 @@
 	}
 
 	void Atrib() {
-		char codPilha[20];
+		
 		int dimensaoArray = 0;
 		if (tk.cat != ID) {
 			error("Identificador esperado!\n");
@@ -56,8 +56,8 @@
 		tk.processado = true;
 
 		Expr();
-		snprintf(codPilha, sizeof(codPilha), "STOR %d,%d\n", (aux.escopo == GLOBAL ? 0 : 1) ,aux.endereco);
-		fputs(codPilha, f_out);
+		escreveCodigoPilha("STOR %d,%d\n", (aux.escopo == GLOBAL ? 0 : 1) ,aux.endereco);
+		
 
 	}
 
@@ -81,11 +81,11 @@
 				break;
 			case MAIORIGUAL:
 				strcpy(rotulo3, geraRotulo());
-				escreveCodigoPilha("COPY\nGOFALSE %s\nGOTRUE %s\nPUSH 0\nGOTO %s\nLABEL %s\nPOP\nLABEL %s\nPUSH 1\nLABEL %s", rotulo1,rotulo2,rotulo3, rotulo2, rotulo3);
+				escreveCodigoPilha("COPY\nGOFALSE %s\nGOTRUE %s\nPUSH 0\nGOTO %s\nLABEL %s\nPOP\nLABEL %s\nPUSH 1\nLABEL %s\n", rotulo1,rotulo2,rotulo3, rotulo2, rotulo3);
 				break;
 			case MENORQUE:
 				strcpy(rotulo3, geraRotulo());
-				escreveCodigoPilha("COPY\nGOTRUE %s\nGOFALSE %s\nPUSH 1\nGOTO %s\nLABEL %s\nPOP\nLABEL %s\nPUSH 0\nLABEL %s", rotulo1, rotulo2, rotulo3, rotulo1, rotulo2, rotulo3);
+				escreveCodigoPilha("COPY\nGOTRUE %s\nGOFALSE %s\nPUSH 1\nGOTO %s\nLABEL %s\nPOP\nLABEL %s\nPUSH 0\nLABEL %s\n", rotulo1, rotulo2, rotulo3, rotulo1, rotulo2, rotulo3);
 				break;
 			case DIFERENTE:
 				escreveCodigoPilha("GOFALSE %s\nPUSH 1\nGOTO %s\nLABEL %S\nPUSH 0\nLABEL %s", rotulo1,rotulo2, rotulo1, rotulo2);
@@ -97,6 +97,7 @@
 				escreveCodigoPilha("GOTRUE %s\nPUSH 1\nGOTO %s\nLABEL %s\nPUSH 0\nLABEL %s\n", rotulo1,rotulo2,rotulo1,rotulo2);
 				break;
 			default:
+				error("Operador relacional desconhecido");
 				break;
 			}
 			exprValida = true;
@@ -153,7 +154,6 @@
 	}
 
 	void Fator() {
-		char codPilha[32];
 		tk = analex(f);
 		if (tk.cat == ID) { 
 			TokenInfo TypesAux;
@@ -163,7 +163,7 @@
 			//if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
 
-			escreveCodigoPilha("LOAD %d,%d", (TypesAux.escopo == GLOBAL ? 0 : 1), TypesAux.endereco);
+			escreveCodigoPilha("LOAD %d,%d\n", (TypesAux.escopo == GLOBAL ? 0 : 1), TypesAux.endereco);
 			
 			tk.processado = true;
 			tk = analex(f);
@@ -303,7 +303,6 @@
 
 	int declListVar(){
 		int countVar = 0;
-		char codPilha[20];
 		tokenInfo.ehConst = NORMAL;
 		tokenInfo.passagem = NA_PASSAGEM;
 		tokenInfo.zumbi = NA_ZUMBI;
@@ -356,7 +355,6 @@
 
 	void declProc(){
 		if(tk.cat != PV_R) error("Inicializador de Função esperado");
-			char codPilha[20];
 			tokenInfo.array = NA_ARRAY;
 			tokenInfo.escopo = GLOBAL;
 			tokenInfo.ehConst = NORMAL;
@@ -405,14 +403,12 @@
 
 
 	void cmdDo(){
-			char codPilha[20];
 			int pos, qtdParam = 0;
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID) error("Esperado ID do procedimento\n");
 			aux = buscaDecl(tk.lexema);
-			snprintf(codPilha, sizeof(codPilha), "CALL %s\n", aux.rotulo);
-			fputs(codPilha, f_out);
+			escreveCodigoPilha("CALL %s\n",aux.rotulo);
 			pos = buscaLexPos(aux.lexema) + 1;
 			contaParam(pos-1, &qtdParam);
 			if(aux.idcategoria != PROC && aux.idcategoria != PROT_) error("Esperado %s ou %s, recebido %s", T_IdCategoria[PROC], T_IdCategoria[PROT_],T_IdCategoria[aux.tipo]);
@@ -475,7 +471,6 @@
 			tk = analex(f);
 	}
 	void cmdGets(){
-		char codPilha[20];
 		if(tk.codigo == GETOUT){
 			tk.processado = true;
 			tk = analex(f);
@@ -517,8 +512,7 @@
 			tk.processado = true;
 			tk = analex(f);
 		}
-		snprintf(codPilha, sizeof(codPilha), "STOR %d,%d\n", (aux.escopo == GLOBAL ? 0 : 1), aux.endereco);
-		fputs(codPilha, f_out);
+		escreveCodigoPilha("STOR %d,%d\n", (aux.escopo == GLOBAL ? 0 : 1), aux.endereco);
 	}
 
 	void cmdVar(){
@@ -735,7 +729,7 @@
 	}
 
 	void declDef(){
-		char codPilha[40];
+		
 		int qtdVariaveis = 0;
 		tokenEndereco = 0;
 		resetTokenInfo(&tokenInfo);
@@ -857,7 +851,7 @@
 				matarZumbis(buscaLexPos(lexema));
 				retirarLocais();
 				if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
-				escreveCodigoPilha("RET %d\n", qtdParametros + 2);
+				escreveCodigoPilha("RET 1,%d\n", qtdParametros);
 
 			}
 			
