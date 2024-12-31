@@ -1,6 +1,6 @@
 int x,y
 
-def p(int c, int b)
+def p(&int c, int b)
     int z
     c = 15
     z = x

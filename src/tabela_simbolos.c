@@ -234,8 +234,8 @@ void aplicaEnderecoParam(int pos, int qtdParam){
     //printf("A posição do parametro é %d----------------\n", posicaoParametro);
     for(int i = qtdParam-1; i >= 0; i--){
         printf("Rodei uma vez pos %d\n", posicaoParametro + i);
-		tabela.tokensTab[posicaoParametro+i].endereco = -3-i;
-        printarTabela(posicaoParametro+i);
-        
-		}
+		tabela.tokensTab[posicaoParametro].endereco = -3-i;
+        printarTabela(posicaoParametro);
+        posicaoParametro++;
+	}
 }
