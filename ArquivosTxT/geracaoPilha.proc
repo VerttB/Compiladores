@@ -1,16 +1,18 @@
 int x,y
 
-def p()
+def p(int c, int b)
     int z
+    c = 15
     z = x
     x = x - 1
-    if(z>1) do p()
+    if(z>1) do p(c,b)
     else y = 1
     endi
     y = y * z
 endp
 
 def init
+    int c
     x = 0
-    do p()
+    do p(c, y)
 endp

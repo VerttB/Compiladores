@@ -56,7 +56,8 @@
 		tk.processado = true;
 
 		Expr();
-		escreveCodigoPilha("STOR %d,%d\n", (aux.escopo == GLOBAL ? 0 : 1) ,aux.endereco);
+		if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("STORI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);	
+		else escreveCodigoPilha("STOR %d,%d\n", aux.escopo ,aux.endereco);
 		
 
 	}
@@ -163,7 +164,8 @@
 			//if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
 
-			escreveCodigoPilha("LOAD %d,%d\n", (TypesAux.escopo == GLOBAL ? 0 : 1), TypesAux.endereco);
+			if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);	
+		    else escreveCodigoPilha("LOAD %d,%d\n", aux.escopo ,aux.endereco);
 			
 			tk.processado = true;
 			tk = analex(f);
@@ -512,7 +514,7 @@
 			tk.processado = true;
 			tk = analex(f);
 		}
-		escreveCodigoPilha("STOR %d,%d\n", (aux.escopo == GLOBAL ? 0 : 1), aux.endereco);
+		escreveCodigoPilha("STOR %d,%d\n", aux.escopo , aux.endereco);
 	}
 
 	void cmdVar(){
@@ -619,7 +621,8 @@
 			if(tk.cat != ID && tk.cat != CT_I) error("ID ou constante inteira esperado para funcionamento da função");
 			if(tk.cat == ID){
 				aux = buscaDecl(tk.lexema);
-				escreveCodigoPilha("LOAD %d, %d\n", aux.escopo,aux.endereco);
+				if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);	
+		        else escreveCodigoPilha("LOAD %d,%d\n", aux.escopo ,aux.endereco);
 			}
 			else escreveCodigoPilha("PUSH %d", tk.valor);
 			tk.processado = true;
@@ -632,7 +635,8 @@
 			if(tk.cat != ID && tk.cat != CT_R) error("ID ou constante real esperado para funcionamento da função");
 			if(tk.cat == ID){
 				aux = buscaDecl(tk.lexema);
-				escreveCodigoPilha("LOAD %d, %d\n", aux.escopo,aux.endereco);
+				if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);	
+		        else escreveCodigoPilha("LOAD %d,%d\n", aux.escopo ,aux.endereco);
 			}
 			else escreveCodigoPilha("PUSHF %f\n", tk.valor_r);
 			tk.processado = true;
@@ -646,7 +650,9 @@
 			if(tk.cat != ID && tk.cat != CT_C) error("ID ou constante char esperado para funcionamento da função");
 			if(tk.cat == ID){
 				aux = buscaDecl(tk.lexema);
-				escreveCodigoPilha("LOAD %d, %d\n", aux.escopo,aux.endereco);
+				if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);	
+		        else escreveCodigoPilha("LOAD %d,%d\n", aux.escopo ,aux.endereco);
+			
 			}
 			else escreveCodigoPilha("PUSH %d\n", tk.c);
 			tk.processado = true;

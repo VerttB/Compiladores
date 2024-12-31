@@ -223,10 +223,19 @@ void contaParam(int pos, int *qtd){
 }
 
 void aplicaEnderecoParam(int pos, int qtdParam){
-    if(pos == -1) pos++;
-    int posicaoParametro = pos+1;
+     int posicaoParametro = 0;
+    if(pos == -1) {
+        pos = tabela.topo - qtdParam;
+        posicaoParametro = pos;
+    }
+    else{
+        posicaoParametro = pos+1;
+    }
+    //printf("A posição do parametro é %d----------------\n", posicaoParametro);
     for(int i = qtdParam-1; i >= 0; i--){
+        printf("Rodei uma vez pos %d\n", posicaoParametro + i);
 		tabela.tokensTab[posicaoParametro+i].endereco = -3-i;
         printarTabela(posicaoParametro+i);
+        
 		}
 }
