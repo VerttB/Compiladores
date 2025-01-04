@@ -303,24 +303,45 @@
 		}
 
 	void arrayInit(){
+		int qtdInit = 0;
+		int maxQtdInit = 0;
+		if(tokenInfo.array == VETOR) maxQtdInit = tokenInfo.arrayDim[0];
+		else if(tokenInfo.array == MATRIZ)  maxQtdInit = tokenInfo.arrayDim[0] * tokenInfo.arrayDim[1];
+		printf("MAX QTD INIT %d\n", maxQtdInit);
 		if(tk.cat == SN && tk.codigo == ATRIBUICAO){
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat != SN && tk.codigo != CHAVEABERTA) error("Abertura de chaves esperado");
-			tk.processado = true;
-			tk = analex(f);
-			varInit();
-			while(tk.cat == SN && tk.codigo == VIRGULA){
-				tk.processado = true;
-					tk = analex(f);
-					varInit();
-				}
-				
 
-			
-			if(tk.cat != SN && tk.codigo != CHAVEFECHADA) error("Fechamento de chaves esperado");
 			tk.processado = true;
 			tk = analex(f);
+			if(tk.cat != SN || tk.codigo != CHAVEABERTA) error("Abertura de chaves esperado");
+			tk.processado = true;
+			tk = analex(f);
+
+			do{
+				printf("QTD DO INIT %d\n", qtdInit);
+				if(qtdInit > maxQtdInit) error("Quantidade máxima de inicialização de array");
+				if(tk.cat == SN && tk.codigo == VIRGULA){
+					tk.processado = true;
+					tk = analex(f);
+				}
+				validarVarInit();
+				bufferIntrucoes("LDDLC 0\nPUSH %d\nADD\n", qtdInit);
+				if(tokenInfo.tipo == CHAR_) bufferIntrucoes("PUSH %d\n", tk.c);
+				else if(tokenInfo.tipo == REAL_) bufferIntrucoes("PUSHF %f\n", tk.valor_r);
+				else if(tokenInfo.tipo == INT_) bufferIntrucoes("PUSH %d\n", tk.valor);
+				else if(tokenInfo.tipo == BOOL_) bufferIntrucoes("PUSH %d\n", tk.valor == 0 ? 0 : 1);
+				bufferIntrucoes("STSTK 1\n");
+				qtdInit++;
+				tk.processado = true;
+			    tk = analex(f);
+			} while (tk.cat == SN && tk.codigo == VIRGULA);
+			
+			printTokenDados();
+			if(tk.cat != SN || tk.codigo != CHAVEFECHADA) error("Fechamento de chaves esperado");
+			tk.processado = true;
+			tk = analex(f);
+			printf("Saí do array init\n");
+
+			printTokenDados();
 		}
 	}
 

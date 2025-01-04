@@ -1,5 +1,6 @@
 int x = 34
 real y
+char ma[2] = {1,2}
 
 def init
     int z = 5
