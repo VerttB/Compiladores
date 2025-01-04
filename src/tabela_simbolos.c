@@ -209,7 +209,6 @@ char *geraRotulo(){
     snprintf(label, sizeof(label),"L%d",count);
     count++;
     return label;
-
 }
 
 void contaParam(int pos, int *qtd){
@@ -228,12 +227,12 @@ void aplicaEnderecoParam(int pos, int qtdParam){
         pos = tabela.topo - qtdParam;
         posicaoParametro = pos;
     }
+
+
     else{
         posicaoParametro = pos+1;
     }
-    //printf("A posição do parametro é %d----------------\n", posicaoParametro);
     for(int i = qtdParam-1; i >= 0; i--){
-        printf("Rodei uma vez pos %d\n", posicaoParametro + i);
 		tabela.tokensTab[posicaoParametro].endereco = -3-i;
         printarTabela(posicaoParametro);
         posicaoParametro++;

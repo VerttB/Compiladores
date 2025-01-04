@@ -130,7 +130,7 @@
 			Termo();
 				if(codigoOp == ADICAO) escreveCodigoPilha("ADD\n");
 				else if(codigoOp == SUB) escreveCodigoPilha("SUB\n");
-			Resto();
+			Resto();	
 			if(codigoOp == OR) escreveCodigoPilha("LABEL %s\n", orRotulo);
 		}
 	}
@@ -164,8 +164,8 @@
 			//if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
 
-			if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);	
-		    else escreveCodigoPilha("LOAD %d,%d\n", aux.escopo ,aux.endereco);
+			if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", TypesAux.escopo ,TypesAux.endereco);	
+		    else escreveCodigoPilha("LOAD %d,%d\n", TypesAux.escopo ,TypesAux.endereco);
 			
 			tk.processado = true;
 			tk = analex(f);
@@ -227,6 +227,7 @@
 	}
 
 	void declVar(){
+		bool inicializado = false;
 		if(tk.cat != ID){
 			error("Identificador esperado\n");
 		}
@@ -237,13 +238,8 @@
 		if(tokenInfo.ehConst == CONST_){
 			if(tk.cat != SN && tk.codigo != ATRIBUICAO) error("Variável constante %s não inicializada", tokenInfo.lexema);
 		}
-			if(tk.cat == SN && tk.codigo == ATRIBUICAO){
-				tk.processado = true;
-				tk = analex(f);
-
-				varInit();
-			}
-			else if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
+			varInit();
+			if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 				int dimensaoArray = 0;
 				while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 					dimensaoArray++;
@@ -259,26 +255,51 @@
 					tk.processado = true;
 					tk = analex(f);
 					}
-					arrayInit();
 					defineTipoArray(dimensaoArray);
+					tokenInfo.endereco = tokenEndereco;
+					if(tokenInfo.tipo == VETOR) tokenEndereco += tokenInfo.arrayDim[0];
+					else if(tokenInfo.tipo == MATRIZ)  tokenEndereco += tokenInfo.arrayDim[0] * tokenInfo.arrayDim[1];
+					arrayInit();
+					inicializado = true;
 			}
-			tokenInfo.endereco = tokenEndereco;
-			tokenEndereco++;
+	
+			
 			inserirNaTabela(tokenInfo); //Insere as declarações de variável
+			
 		}
 
 		void varInit(){
+			if(tk.cat == SN && tk.codigo == ATRIBUICAO){
+				tk.processado = true;
+				tk = analex(f);
 			if(tk.cat == CT_C || tk.cat == CT_I || tk.cat == CT_R){
 					validarVarInit();
 					if(tokenInfo.ehConst == CONST_){
 						atribuirConst();
 					}
+					else{
+						if(tokenInfo.tipo == CHAR_) bufferIntrucoes("PUSH %d\n", tk.c);
+						else if(tokenInfo.tipo == REAL_) bufferIntrucoes("PUSHF %f\n", tk.valor_r);
+						else if(tokenInfo.tipo == INT_) bufferIntrucoes("PUSH %d\n", tk.valor);
+						else if(tokenInfo.tipo == BOOL_) bufferIntrucoes("PUSH %d\n", tk.valor == 0 ? 0 : 1);
+					}
+
 					tk.processado = true;
 					tk = analex(f);
 			}
 				else{
 					error("Inicialização de variável inválida");
 				}
+			}
+			else{
+					if(tokenInfo.tipo == CHAR_) bufferIntrucoes("PUSH 0/\n");
+					else if(tokenInfo.tipo == REAL_) bufferIntrucoes("PUSHF 0.0\n");
+					else if(tokenInfo.tipo == INT_) bufferIntrucoes("PUSH 0\n");
+					else if(tokenInfo.tipo == BOOL_) bufferIntrucoes("PUSH 0\n");
+			}
+			tokenInfo.endereco = tokenEndereco;
+			tokenEndereco++;
+			bufferIntrucoes("STOR %d, %d\n", tokenInfo.escopo, tokenInfo.endereco);
 		}
 
 	void arrayInit(){
@@ -317,14 +338,21 @@
 			tokenInfo.ehConst = CONST_;
 		}
 		tipo();
-		declVar();
-		countVar++;
-			while(tk.cat == SN && tk.codigo == VIRGULA){
+		do{
+			if(tk.cat == SN && tk.codigo == VIRGULA){
 				tk.processado = true;
 				tk = analex(f);
-				declVar();
-				countVar++;
 			}
+			declVar();
+			if(tokenInfo.array == SIMPLES) countVar = countVar + 1;
+			else if(tokenInfo.array == VETOR) countVar += tokenInfo.arrayDim[0];
+			else if(tokenInfo.array == MATRIZ) countVar += tokenInfo.arrayDim[0] * tokenInfo.arrayDim[1];
+			tokenInfo.array = SIMPLES;
+			tokenInfo.arrayDim[0] = 0;
+			tokenInfo.arrayDim[1] = 0;
+		} while (tk.cat == SN && tk.codigo == VIRGULA);
+		
+		
 		return countVar;
 	}
 	void tipo(){
@@ -673,17 +701,21 @@
 		else if(tokenInfo.tipo == REAL_ && tk.cat != CT_R) error("Erro semântico, inicialização inválida. Esperado %s", T_tipo[tokenInfo.tipo]);
 	}
 	void atribuirConst(){
-		 switch (tokenInfo.tipo) {
+		switch (tokenInfo.tipo) {
         case CHAR_:
+			bufferIntrucoes("PUSH %d\n", tk.c);
             tokenInfo.valConst.char_const = tk.c;
             break;
         case INT_:
+		    bufferIntrucoes("PUSH %d\n", tk.valor);
             tokenInfo.valConst.int_const = tk.valor;
             break;
         case REAL_:
+		   bufferIntrucoes("PUSHF %f\n", tk.valor_r);
             tokenInfo.valConst.float_const = tk.valor_r;
             break;
         case BOOL_:
+			bufferIntrucoes("PUSH %d\n", tk.valor);
             tokenInfo.valConst.bool_const = tk.valor > 0 ? 1 : 0;
             break;
         default:
@@ -757,6 +789,10 @@
 					qtdVariaveis = qtdVariaveis + declListVar();
 				}
 				if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
+				for(int i = 0; i < quantidadeIntrucoes;i++){
+					escreveCodigoPilha("%s", instrBuffer[i]);
+				}
+				quantidadeIntrucoes = 0;
 				while(tk.cat == PV_R || tk.cat == ID){
 					if(tk.codigo == ENDP) break;
 					tk.processado = true;
@@ -842,7 +878,14 @@
 					tokenInfo.escopo = LOCAL;
 					qtdVariaveis = qtdVariaveis + declListVar();
 				}
+
 				if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
+				for(int i = 0; i < quantidadeIntrucoes;i++){
+					escreveCodigoPilha("%s", instrBuffer[i]);
+				}
+				quantidadeIntrucoes = 0;
+
+
 				while(tk.cat == PV_R || tk.cat == ID){
 					if(tk.codigo == ENDP) break;
 					tk.processado = true;
@@ -870,18 +913,25 @@
 		tokenInfo.idcategoria = VAR_GLOBAL;
 			qtdVariaveis = qtdVariaveis + declListVar();
 		}
-		resetTokenInfo(&tokenInfo);
 		if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
+		for(int i = 0; i < quantidadeIntrucoes;i++){
+					escreveCodigoPilha("%s", instrBuffer[i]);
+				}
+				quantidadeIntrucoes = 0;
+		resetTokenInfo(&tokenInfo);
 		while(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)){
 			declProc();
 		}
 		if(qtdVariaveis) escreveCodigoPilha("DMEM %d\n", qtdVariaveis);
 	}
 	void testeSint(char *p) {
+		char label[20];
+		strcpy(label, geraRotulo());
 		if ((f=fopen(p, "r")) == NULL)
 			error("Arquivo de entrada da expressão nao encontrado!\n");
 		if((f_out=fopen("proc.obj", "w")) == NULL) error("Erro ao abrir arquivo proc.obj");
 		fputs("INIP\n", f_out);
+		escreveCodigoPilha("GOTO %s\n", label);
 		tk.processado = true;
 		tk = analex(f);
 		prog();
@@ -896,6 +946,10 @@
 			printf("\n------------------------------------\n");
 		}
 			else error("Finalização de Arquivo Inválida\n");
+		escreveCodigoPilha("LABEL %s\n", label);
+		if(buscaLexPos("Init") > 0){
+			escreveCodigoPilha("CALL %s\n", buscaDecl("Init").rotulo);
+		}
 		fputs("HALT", f_out);
 		fclose(f);
 		fclose(f_out);

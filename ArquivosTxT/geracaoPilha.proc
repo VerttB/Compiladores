@@ -1,5 +1,13 @@
 int x,y
 
+prot p(&int,int)
+
+def init
+    int c
+    x = 0
+    do p(c, y)
+endp
+
 def p(&int c, int b)
     int z
     c = 15
@@ -9,10 +17,4 @@ def p(&int c, int b)
     else y = 1
     endi
     y = y * z
-endp
-
-def init
-    int c
-    x = 0
-    do p(c, y)
 endp

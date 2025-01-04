@@ -5,6 +5,12 @@
 #include "analex.h"
 #include "cores.h"
 #include "anasint.h"
+#include "auxfuncs.h"
+
+
+int quantidadeIntrucoes = 0;
+
+
     void error(char *err, ...){
         printf(_RED_);
         va_list args;
@@ -33,4 +39,16 @@ void escreveCodigoPilha(const char* format, ...) {
     va_end(args);                    
     fputs(buffer, f_out);            
 }
+void bufferIntrucoes(char *inst,...){
+    static const int MAX_INSTRUCOES = 1024;
+    va_list args;
+    va_start(args, inst);
+        if (quantidadeIntrucoes < MAX_INSTRUCOES) {
+            vsnprintf(instrBuffer[quantidadeIntrucoes], TAM_MAX_INSTRUCOES, inst, args);
+            quantidadeIntrucoes++;
+        } else {
+            fprintf(stderr, "Erro: Buffer de instruções cheio!\n");
+        }
 
+        va_end(args);
+    }
