@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 typedef enum {
-    ID, CT_I, CT_R,CT_C, LT, FIM_ARQ, SN, PV_R, FIM_EXPR
+    ID, CT_I, CT_R,CT_C, LT, FIM_ARQ, SN, PV_R
 }CATEGORIA;
 
 typedef enum {

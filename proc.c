@@ -7,7 +7,7 @@
 #include "src/ansi_escape.h"
 
 int linha;
-FILE *f;
+FILE *f, *f_out;
 TOKEN tk;
 
 int main(int argc, char *argv[]){

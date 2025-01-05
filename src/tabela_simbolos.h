@@ -3,6 +3,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+
+extern char *T_escopo[];
+extern char *T_tipo[];
+extern char *T_IdCategoria[];
+extern char *T_passagem[];
+extern char *T_zumbi[];
+extern char *T_array[];
+extern char *T_ehConst[];
+
 typedef enum{
     GLOBAL, LOCAL
 }ESCOPO;
@@ -77,4 +86,6 @@ void matarZumbis(int);
 void retirarLocais();
 TokenInfo buscaDecl(char *);
 char *geraRotulo();
+void contaParam(int, int*);
+void aplicaEnderecoParam(int,int);
 #endif

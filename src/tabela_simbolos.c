@@ -56,7 +56,6 @@ char *T_ehConst[] = {
 
 void inserirNaTabela(TokenInfo token){
     buscaDeclRep(token); // Verifica Repetição de lexema
-    token.endereco = tabela.topo;
     if(token.idcategoria == PROT_ || token.idcategoria == PROC) strcpy(token.rotulo, geraRotulo());
     tabela.tokensTab[tabela.topo] = token;
     tabela.topo++;
@@ -75,9 +74,12 @@ void buscaDeclRep(TokenInfo token){
     }
 }
 
+//Olhar isso aqui depois
 int buscaLexPos(char *lexema){
      for(int i = tabela.topo-1;i >= 0;i--){
-        if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0 && tabela.tokensTab[i].idcategoria != PROC_PAR) return i;
+        if(strcmp(lexema, tabela.tokensTab[i].lexema) == 0 && tabela.tokensTab[i].zumbi != ZUMBI_){
+            return i;
+        }
     }
     return -1;
 }
@@ -111,7 +113,8 @@ void printarTabela(int pos){
         else{
             printf("│%-8s", "N/A");
         }
-        printf("│%-8d", aux.endereco);
+        if(aux.idcategoria == PROT_ || aux.idcategoria == PROC || strcmp(aux.lexema, "") ==0) printf("│%-8c", '-');
+        else printf("│%-8d", aux.endereco);
         printf("│%-9s", T_IdCategoria[aux.idcategoria]);
         printf("│%-8s", aux.rotulo);
         printf("%s│",_NORMAL_);
@@ -143,14 +146,14 @@ void resetTokenInfo(TokenInfo *token) {
 
 void inserirVazios(int procPos, TokenInfo tokenInfo){
     TokenInfo aux;
-    int auxNum;
-    tabela.tokensTab[procPos].idcategoria = PROC;
+    int auxNum = 0;
     procPos++;
     for(int i = procPos; i < tabela.topo; i++){
         if(strcmp(tokenInfo.lexema, tabela.tokensTab[i].lexema) == 0)  error("Redeclaração de parâmetro %s encontrada", tokenInfo.lexema);
-        if(strcmp( tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){aux = tabela.tokensTab[i]; auxNum = i; break;}
+        if(strcmp(tabela.tokensTab[i].lexema, "") == 0 && tabela.tokensTab[i].idcategoria == PROC_PAR){aux = tabela.tokensTab[i]; auxNum = i; break;}
         if(tabela.tokensTab[i].idcategoria != PROC_PAR) error("Quantidade de parâmetros inválida");
     }
+
     if(auxNum == 0) error("Quantidade de argumentos inválida");
     //if(aux.idcategoria != tokenInfo.idcategoria) error("Quantidade de parâmetros inválida");
     if(strcmp(aux.lexema, "") != 0) error("Quantidade de argumentos inválida");
@@ -167,7 +170,6 @@ void inserirVazios(int procPos, TokenInfo tokenInfo){
 }
 
 void verificaFaltaParam(int procPos){
-    
     procPos++;
     while(1){
         if(procPos >= tabela.topo) break;
@@ -197,15 +199,42 @@ void retirarLocais(){
 
 TokenInfo buscaDecl(char *lexema){
     int pos = buscaLexPos(lexema);
-    if(pos < 0)  error("Declaração não encontrada");
+    if(pos < 0)  error("Declaração %s não encontrada", lexema);
     return tabela.tokensTab[pos];
 }
 
 char *geraRotulo(){
-    static int count = 0;
+    static int count = 1;
     static char label[8];
-    snprintf(label, sizeof(label),"LBL %d",count);
+    snprintf(label, sizeof(label),"L%d",count);
     count++;
     return label;
+}
 
+void contaParam(int pos, int *qtd){
+    pos++;
+    while(1){
+        if(tabela.tokensTab[pos].idcategoria != PROC_PAR) break;
+        if(pos == tabela.topo) break;
+        pos++;
+        (*qtd)++;
+    }
+}
+
+void aplicaEnderecoParam(int pos, int qtdParam){
+     int posicaoParametro = 0;
+    if(pos == -1) {
+        pos = tabela.topo - qtdParam;
+        posicaoParametro = pos;
+    }
+
+
+    else{
+        posicaoParametro = pos+1;
+    }
+    for(int i = qtdParam-1; i >= 0; i--){
+		tabela.tokensTab[posicaoParametro].endereco = -3-i;
+        printarTabela(posicaoParametro);
+        posicaoParametro++;
+	}
 }
