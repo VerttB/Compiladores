@@ -227,7 +227,6 @@
 	}
 
 	void declVar(){
-		bool inicializado = false;
 		if(tk.cat != ID){
 			error("Identificador esperado\n");
 		}
@@ -238,7 +237,7 @@
 		if(tokenInfo.ehConst == CONST_){
 			if(tk.cat != SN && tk.codigo != ATRIBUICAO) error("Variável constante %s não inicializada", tokenInfo.lexema);
 		}
-			varInit();
+			if(tk.cat != SN || tk.codigo != COLCHETEABERTO) varInit();
 			if(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 				int dimensaoArray = 0;
 				while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
@@ -257,10 +256,10 @@
 					}
 					defineTipoArray(dimensaoArray);
 					tokenInfo.endereco = tokenEndereco;
+					arrayInit();
 					if(tokenInfo.tipo == VETOR) tokenEndereco += tokenInfo.arrayDim[0];
 					else if(tokenInfo.tipo == MATRIZ)  tokenEndereco += tokenInfo.arrayDim[0] * tokenInfo.arrayDim[1];
-					arrayInit();
-					inicializado = true;
+					
 			}
 	
 			
@@ -292,7 +291,8 @@
 				}
 			}
 			else{
-					if(tokenInfo.tipo == CHAR_) bufferIntrucoes("PUSH 0/\n");
+					printTokenDados("VARINIT");
+					if(tokenInfo.tipo == CHAR_) bufferIntrucoes("PUSH /0\n");
 					else if(tokenInfo.tipo == REAL_) bufferIntrucoes("PUSHF 0.0\n");
 					else if(tokenInfo.tipo == INT_) bufferIntrucoes("PUSH 0\n");
 					else if(tokenInfo.tipo == BOOL_) bufferIntrucoes("PUSH 0\n");
@@ -324,7 +324,7 @@
 					tk = analex(f);
 				}
 				validarVarInit();
-				bufferIntrucoes("LDDLC 0\nPUSH %d\nADD\n", qtdInit);
+				bufferIntrucoes("LDDLC %d\nPUSH %d\nADD\n", tokenInfo.endereco, qtdInit);
 				if(tokenInfo.tipo == CHAR_) bufferIntrucoes("PUSH %d\n", tk.c);
 				else if(tokenInfo.tipo == REAL_) bufferIntrucoes("PUSHF %f\n", tk.valor_r);
 				else if(tokenInfo.tipo == INT_) bufferIntrucoes("PUSH %d\n", tk.valor);
@@ -936,9 +936,9 @@
 		}
 		if(qtdVariaveis) escreveCodigoPilha("AMEM %d\n", qtdVariaveis);
 		for(int i = 0; i < quantidadeIntrucoes;i++){
-					escreveCodigoPilha("%s", instrBuffer[i]);
-				}
-				quantidadeIntrucoes = 0;
+				escreveCodigoPilha("%s", instrBuffer[i]);
+			}
+		quantidadeIntrucoes = 0;
 		resetTokenInfo(&tokenInfo);
 		while(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)){
 			declProc();

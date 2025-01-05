@@ -1,6 +1,6 @@
-int x = 34
+char ma[25][25] = {'1', '2'}
 real y
-char ma[2] = {1,2}
+int x
 
 def init
     int z = 5
