@@ -27,7 +27,7 @@
 	
 	}
 
-	void Atrib() {
+	void atrib() {
 		
 		int dimensaoArray = 0;
 		if (tk.cat != ID) {
@@ -37,19 +37,21 @@
 		if(aux.idcategoria == PROC || aux.idcategoria == PROT_) error("Chamada incorreta de procedimento");
 		tk.processado = true;
 		tk = analex(f);
+		if(aux.array != SIMPLES) escreveCodigoPilha("LDDLC 0\n");
 		while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 			dimensaoArray++;
+			printf("VALOR DIM %d", dimensaoArray);
 			if(dimensaoArray > 2) error("Vetor de tamanho inválido");
-			if(dimensaoArray == 2 && aux.array != MATRIZ) error("Array de dimensão inválido");
+			if(dimensaoArray == 2 && aux.array != MATRIZ) error("Array de dimensão inválido ");
 			tk.processado = true;
 			tk = analex(f);
 			Expr();
-			if(tk.cat != SN && tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+			if(tk.cat != SN || tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 			tk.processado = true;
 			tk = analex(f);
-			
 		}
-		if(dimensaoArray == 1 && aux.array == VETOR) error("Array de dimensão inválida");
+		if(aux.array != SIMPLES) escreveCodigoPilha("ADD\n");
+		if(dimensaoArray == 1 && aux.array == MATRIZ) error("Array de dimensão inválida");
 		if (tk.cat != SN || tk.codigo != ATRIBUICAO) {
 			error("Sinal de atribuição esperado!\n");
 		}
@@ -58,7 +60,8 @@
 		Expr();
 		if(aux.tipo != REAL_ && tipoExpressao == REAL_) error("Atribuição de tipo inválida ");
 		tipoExpressao = -1;
-		if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("STORI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);	
+		if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("STORI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);
+		else if(aux.array != SIMPLES) escreveCodigoPilha("STSTK 1\n");	
 		else escreveCodigoPilha("STOR %d,%d\n", aux.escopo ,aux.endereco);
 		
 
@@ -174,7 +177,8 @@
 			// //if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			// if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
 			if(aux.idcategoria == PROC_PAR && aux.passagem == REFERENCIA) escreveCodigoPilha("LOADI %d, %d", TypesAux.escopo, TypesAux.endereco);
-			else if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", TypesAux.escopo ,TypesAux.endereco);	
+			else if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", TypesAux.escopo ,TypesAux.endereco);
+			else if(TypesAux.array != SIMPLES) escreveCodigoPilha("LDDLC 0\n");	
 		    else escreveCodigoPilha("LOAD %d,%d\n", TypesAux.escopo ,TypesAux.endereco);
 
 			if(tipoExpressao == -1) tipoExpressao = TypesAux.tipo;
@@ -192,6 +196,7 @@
 				tk.processado = true;
 				tk = analex(f);
 			}
+			if(TypesAux.array != SIMPLES) escreveCodigoPilha("ADD\nLDSTK 1\n");
 
 		}
 		else if (tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C) {
@@ -414,7 +419,7 @@
 		if(tk.cat == PV_R && (tk.codigo == PROT || tk.codigo == DEF)) error("CMD - Palavra Chave Inválida"); //Inválido se for DEF ou PROT
 		if(tk.codigo == DO) cmdDo();
 		else if(tk.codigo == WHILE) cmdWhile();
-		else if(tk.cat == ID) Atrib();
+		else if(tk.cat == ID) atrib();
 		else if(tk.codigo == GETINT || tk.codigo == GETOUT || tk.codigo == GETREAL ||tk.codigo == GETCHAR || tk.codigo == GETSTR) cmdGets();
 		else if(tk.codigo == PUTINT || tk.codigo == PUTREAL || tk.codigo == PUTREAL || tk.codigo == PUTSTR || tk.codigo == PUTCHAR) cmdPuts();
 		else if(tk.codigo == VAR) cmdVar();
