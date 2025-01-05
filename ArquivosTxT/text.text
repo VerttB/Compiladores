@@ -1,4 +1,5 @@
 def init
-    int a
-    a = 2.5 > 2.5
+   int a[100], x
+   a[5] = 3
+   x = a[5]
 endp
