@@ -11,7 +11,7 @@
 	TokenInfo tokenInfo, aux;
 	bool exprValida = true;
 	int tokenEndereco = 0;
-	int tipoExpressao;
+	int tipoExpressao = -1;
 
 	int opRel(){
 		tk = analex(f);
@@ -34,7 +34,7 @@
 			error("Identificador esperado!\n");
 		}
 		aux = buscaDecl(tk.lexema);
-		if(aux.idcategoria == PROC || aux.idcategoria == PROT) error("Chamada incorreta de procedimento");
+		if(aux.idcategoria == PROC || aux.idcategoria == PROT_) error("Chamada incorreta de procedimento");
 		tk.processado = true;
 		tk = analex(f);
 		while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
@@ -56,6 +56,8 @@
 		tk.processado = true;
 
 		Expr();
+		if(aux.tipo != REAL_ && tipoExpressao == REAL_) error("Atribuição de tipo inválida ");
+		tipoExpressao = -1;
 		if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("STORI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);	
 		else escreveCodigoPilha("STOR %d,%d\n", aux.escopo ,aux.endereco);
 		
@@ -73,6 +75,7 @@
 			
 			codigoOp = opRel();
 			exprSimples();
+			tipoExpressao = BOOL_;
 			strcpy(rotulo1, geraRotulo());
 			strcpy(rotulo2, geraRotulo());
 			escreveCodigoPilha("SUB\n");
@@ -101,10 +104,10 @@
 				error("Operador relacional desconhecido");
 				break;
 			}
-			exprValida = true;
+			
 	}
 
-	if(!(strcmp(aux.lexema, "while") == 0 || strcmp(aux.lexema, "if") == 0 || strcmp(aux.lexema,"var") == 0 || aux.tipo == BOOL_)) exprValida = true;
+	//if(!(strcmp(aux.lexema, "while") == 0 || strcmp(aux.lexema, "if") == 0 || strcmp(aux.lexema,"var") == 0 || aux.tipo == BOOL_)) exprValida = true;
 	
 	}
 
@@ -131,7 +134,10 @@
 				if(codigoOp == ADICAO) escreveCodigoPilha("ADD\n");
 				else if(codigoOp == SUB) escreveCodigoPilha("SUB\n");
 			Resto();	
-			if(codigoOp == OR) escreveCodigoPilha("LABEL %s\n", orRotulo);
+			if(codigoOp == OR) {
+				escreveCodigoPilha("LABEL %s\n", orRotulo);
+				tipoExpressao = BOOL_;
+			}
 		}
 	}
 
@@ -150,23 +156,30 @@
 				if(codigoOp == MULT) fputs("MULT\n", f_out);
 				else if(codigoOp == DIV) fputs("DIV\n", f_out);
 			Sobra();
-			if(codigoOp == AND) escreveCodigoPilha("LABEL %s\n", andRotulo);
+			if(codigoOp == AND) {
+				escreveCodigoPilha("LABEL %s\n", andRotulo);
+				tipoExpressao = BOOL_;
+				}
 		}
 	}
 
 	void Fator() {
+		
 		tk = analex(f);
 		if (tk.cat == ID) { 
 			TokenInfo TypesAux;
 			TypesAux = buscaDecl(tk.lexema);
-			if(aux.tipo == REAL_ && TypesAux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
-			if((aux.tipo == CHAR_ || aux.tipo == INT_ || aux.tipo == BOOL_) && TypesAux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
-			//if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
-			if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
-
-			if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", TypesAux.escopo ,TypesAux.endereco);	
+			// if(aux.tipo == REAL_ && TypesAux.tipo != REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			// if((aux.tipo == CHAR_ || aux.tipo == INT_ || aux.tipo == BOOL_) && TypesAux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			// //if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
+			// if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
+			if(aux.idcategoria == PROC_PAR && aux.passagem == REFERENCIA) escreveCodigoPilha("LOADI %d, %d", TypesAux.escopo, TypesAux.endereco);
+			else if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", TypesAux.escopo ,TypesAux.endereco);	
 		    else escreveCodigoPilha("LOAD %d,%d\n", TypesAux.escopo ,TypesAux.endereco);
-			
+
+			if(tipoExpressao == -1) tipoExpressao = TypesAux.tipo;
+			else if(tipoExpressao == REAL_ && TypesAux.tipo != REAL_) error("Esperado Real");
+			else tipoExpressao = TypesAux.tipo;
 			tk.processado = true;
 			tk = analex(f);
 			int dimensaoArray = 0;
@@ -183,19 +196,27 @@
 		}
 		else if (tk.cat == CT_I || tk.cat == CT_R || tk.cat == CT_C) {
 			if(tk.cat == CT_I){
-				if(aux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s ou %s, recebido %s. ", T_tipo[CHAR_], T_tipo[INT_], T_tipo[aux.tipo]);
+				//if(aux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s ou %s, recebido %s. ", T_tipo[CHAR_], T_tipo[INT_], T_tipo[aux.tipo]);
+				if(tipoExpressao == -1) tipoExpressao = INT_;
+				else if(tipoExpressao == REAL_) error("Erro semântico, esperado valor inteiro/char/boolean");
+				else tipoExpressao = INT_;
 				escreveCodigoPilha("PUSH %d\n", tk.valor);
 			}
 			else if(tk.cat == CT_R){
-				if(aux.tipo != REAL_ && !exprValida) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[REAL_]);
+				//if(aux.tipo != REAL_ && !exprValida) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[REAL_]);
 				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
-				exprValida = false;
+				if(tipoExpressao == -1) tipoExpressao = REAL_;
+				else if(tipoExpressao != REAL_) error("Erro semântico, esperado valor real");
+				else tipoExpressao = REAL_;
 				escreveCodigoPilha("PUSHF %f\n", tk.valor_r);
 			}
 			else{
-				if(aux.tipo == REAL) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[CHAR_]);
+				//if(aux.tipo == REAL) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[CHAR_]);
 				if(aux.array != SIMPLES) error("Índices de vetor devem ser somente do tipo inteiro");
-				exprValida = false;
+				if(tipoExpressao == -1) tipoExpressao = CHAR_;
+				else if(tipoExpressao == REAL_) error("Erro semântico, esperado valor inteiro/char/boolean");
+				else tipoExpressao = CHAR_;
+				//exprValida = false;
 				escreveCodigoPilha("PUSH %d\n", tk.c);
 			}
 			tk.processado = true; 
@@ -257,8 +278,8 @@
 					defineTipoArray(dimensaoArray);
 					tokenInfo.endereco = tokenEndereco;
 					arrayInit();
-					if(tokenInfo.tipo == VETOR) tokenEndereco += tokenInfo.arrayDim[0];
-					else if(tokenInfo.tipo == MATRIZ)  tokenEndereco += tokenInfo.arrayDim[0] * tokenInfo.arrayDim[1];
+					if(tokenInfo.array == VETOR) tokenEndereco += tokenInfo.arrayDim[0];
+					else if(tokenInfo.array == MATRIZ)  tokenEndereco += tokenInfo.arrayDim[0] * tokenInfo.arrayDim[1];
 					
 			}
 	
@@ -317,7 +338,6 @@
 			tk = analex(f);
 
 			do{
-				printf("QTD DO INIT %d\n", qtdInit);
 				if(qtdInit > maxQtdInit) error("Quantidade máxima de inicialização de array");
 				if(tk.cat == SN && tk.codigo == VIRGULA){
 					tk.processado = true;
@@ -472,6 +492,8 @@
 			if(qtdParam > 0 && tabela.tokensTab[pos].idcategoria != PROC_PAR) error("Quantidade inválida de argumentos");
 				aux = tabela.tokensTab[pos];
 				Expr();
+				if((aux.tipo != REAL_ && tipoExpressao == REAL_) || (aux.tipo == REAL_ && tipoExpressao != REAL_)) error("Valores incompatíveis. ");
+				tipoExpressao = -1;
 				pos++;
 				qtdParam--;
 				while(tk.cat == SN && tk.codigo == VIRGULA){
@@ -480,6 +502,8 @@
 						tk.processado = true;
 						tk = analex(f);
 						Expr();
+						if((aux.tipo != REAL_ && tipoExpressao == REAL_) || (aux.tipo == REAL_ && tipoExpressao != REAL_)) error("Valores incompatíveis. ");
+						tipoExpressao = -1;
 						pos++;
 						qtdParam--;
 					}
@@ -501,7 +525,8 @@
 			if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
 			tk.processado = true;
 			Expr();
-			if(!exprValida) error("Expressão deve ser de tipo booleano. ");
+			if(tipoExpressao == REAL_) error("Expressão deve ser de tipo booleano. ");
+			tipoExpressao = -1;
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
 			strcpy(endWhile, geraRotulo());
 			escreveCodigoPilha("GOFALSE %s\n", endWhile);
@@ -567,26 +592,64 @@
 	}
 
 	void cmdVar(){
-			strcpy(aux.lexema, "var");
+			char label1[20], label2[20], label3[20], codigoBy[20];
+			int codigoToDt = 0;
+			TokenInfo varAux;
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID) error("Identificador Esperado");
+			aux = buscaDecl(tk.lexema);
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != PV_R && tk.codigo != FROM) error("Palavra chave from esperado");
 			tk.processado = true;
 			Expr();
+			escreveCodigoPilha("STOR %d, %d", aux.escopo, aux.endereco);
+			if(tipoExpressao == REAL_) error("Esperado valor inteiro/char/boolean");
+			tipoExpressao = -1;
 			if(tk.cat != PV_R && (tk.codigo != DT || tk.codigo != TO)) error("Esperado DT ou TO");
+			codigoToDt = tk.codigo;
+			if(codigoToDt == DT){
+				strcpy(label1, geraRotulo());
+				escreveCodigoPilha("LABEL %s", label1);
+			}
 			tk.processado = true;
 			Expr();
-
+			if(codigoToDt == TO){
+				strcpy(label1, geraRotulo());
+				escreveCodigoPilha("LABEL %s\nCOPY", label1);
+			}
+			if(tipoExpressao == REAL_) error("Esperado valor inteiro/char/boolean");
+			tipoExpressao = -1;
+			escreveCodigoPilha("LOAD %d, %d\n", aux.escopo, aux.endereco);
+			escreveCodigoPilha("SUB\n");
+			if(codigoToDt == TO){
+				strcpy(label2, geraRotulo());
+				strcpy(label3, geraRotulo());
+				escreveCodigoPilha("GOTRUE %s\nGOTO %s\nLABEL %s", label2, label3, label2);
+			}else if(codigoToDt == DT){
+				strcpy(label2, geraRotulo());
+				strcpy(label3, geraRotulo());
+				escreveCodigoPilha("COPY\nGOTRUE %s\nGOFALSE %s", label2, label3);
+			}
 			if(tk.cat == PV_R && tk.codigo == BY){
 				tk.processado = true;
 				tk = analex(f);
 				if(tk.cat != ID && tk.cat != CT_I) error("VAR: Identificador ou constante inteira esperada");
+				if(tk.cat == ID){
+					varAux = buscaDecl(tk.lexema);
+					if(varAux.tipo == REAL_) error("Tipo inválido em expressão Var");
+					snprintf(codigoBy, sizeof(codigoBy), "LOAD %d,%d", varAux.escopo, varAux.endereco);
+				}
+				else{
+					snprintf(codigoBy, sizeof(codigoBy), "PUSH %d", tk.valor);
+				}
 				tk.processado = true;
 				tk = analex(f);
-			} 
+			}
+			else{
+				snprintf(codigoBy, sizeof(codigoBy), "PUSH 1");
+			}
 			tk.processado = true;
 			while(tk.codigo != ENDV){
 				if (tk.cat == FIM_ARQ) {
@@ -596,6 +659,18 @@
 				cmd();
 				tk = analex(f);
 			}
+			if(codigoToDt == TO){
+				escreveCodigoPilha("%s", codigoBy);
+				escreveCodigoPilha("LOAD %d,%d", aux.escopo, aux.endereco);
+				escreveCodigoPilha("ADD\nSTOR %d,%d\nGOTO %s", aux.escopo, aux.endereco, label1);
+				escreveCodigoPilha("LABEL %s\nPOP\n", label3);
+			}else if(codigoToDt == DT){
+				escreveCodigoPilha("LOAD %d,%d", aux.escopo, aux.endereco);
+				escreveCodigoPilha("%s", codigoBy);
+				escreveCodigoPilha("SUB\nSTOR %d,%d\nGOTO %s", aux.escopo, aux.endereco, label1);
+				escreveCodigoPilha("LABEL %s\nPOP\nLABEL %s", label2, label3);
+			}
+
 			if(tk.cat != PV_R && tk.codigo != ENDV) error("VAR: Fim do comando esperado");
 			tk.processado = true;
 			
@@ -610,7 +685,8 @@
 		if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses. ");
 		tk.processado = true;
 		Expr();
-		if(!exprValida) error("Expressão deve ser de tipo booleano. ");
+		if(tipoExpressao == REAL_) error("Expressão deve ser de tipo booleano. ");
+		tipoExpressao = -1;
 		if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado. ");
 		tk.processado = true;
 		tk = analex(f);
@@ -633,6 +709,8 @@
 				if(tk.cat != SN || tk.codigo != PARENTESEABERTO) error("Esperado abertura de parenteses\n");
 				tk.processado = true;
 				Expr();
+				if(tipoExpressao == REAL_) error("Expressão deve ser de tipo booleano. ");
+				tipoExpressao = -1;
 				if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("Fechamento de parenteses esperado\n");
 				tk.processado = true;
 				tk = analex(f);
@@ -957,7 +1035,7 @@
 		tk = analex(f);
 		prog();
 		for (int i = 0; i < tabela.topo; i++) {
-        if (tabela.tokensTab[i].idcategoria == PROT) {
+        if (tabela.tokensTab[i].idcategoria == PROT_) {
             error("PROT sem definicao encontrado");
 			}
 		}

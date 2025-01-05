@@ -1,8 +1,4 @@
-char ma[25][25] = {'1', '2'}
-real y
-int x
-
 def init
-    int z = 5
-    z = x
+    int a
+    a = 2.5 > 2.5
 endp
