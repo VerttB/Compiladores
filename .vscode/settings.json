@@ -61,6 +61,11 @@
   },
   "files.associations": {
     "stdbool.h": "c",
-    "analex.h": "c"
+    "analex.h": "c",
+    "stdio.h": "c",
+    "_mingw.h": "c",
+    "types.h": "c",
+    "string.h": "c",
+    "anasint.h": "c"
   }
 }

@@ -9,9 +9,9 @@
 	#include "cores.h"
 
 	TokenInfo tokenInfo, aux;
-	bool exprValida = true;
 	int tokenEndereco = 0;
 	int tipoExpressao = -1;
+	int cmdDoAtivo = 0;
 
 	int opRel(){
 		tk = analex(f);
@@ -60,7 +60,7 @@
 		Expr();
 		if(aux.tipo != REAL_ && tipoExpressao == REAL_) error("Atribuição de tipo inválida ");
 		tipoExpressao = -1;
-		if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("STORI %d,%d\n", aux.escopo == GLOBAL ,aux.endereco);
+		if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("STORI %d,%d\n", aux.escopo ,aux.endereco);
 		else if(aux.array != SIMPLES) escreveCodigoPilha("STSTK 1\n");	
 		else escreveCodigoPilha("STOR %d,%d\n", aux.escopo ,aux.endereco);
 		
@@ -110,7 +110,6 @@
 			
 	}
 
-	//if(!(strcmp(aux.lexema, "while") == 0 || strcmp(aux.lexema, "if") == 0 || strcmp(aux.lexema,"var") == 0 || aux.tipo == BOOL_)) exprValida = true;
 	
 	}
 
@@ -176,8 +175,8 @@
 			// if((aux.tipo == CHAR_ || aux.tipo == INT_ || aux.tipo == BOOL_) && TypesAux.tipo == REAL_) error("Erro semântico, atribuição de tipo inválido. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			// //if(aux.tipo == BOOL_ && TypesAux.tipo != INT_) error("Erro semãntico, atribuição de tipo inválida. Esperado %s, recebido %s. ", T_tipo[aux.tipo], T_tipo[TypesAux.tipo]);
 			// if(TypesAux.tipo == CHAR_ || TypesAux.tipo == REAL_) exprValida = false;
-			if(aux.idcategoria == PROC_PAR && aux.passagem == REFERENCIA) escreveCodigoPilha("LOADI %d, %d", TypesAux.escopo, TypesAux.endereco);
-			else if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("LOADI %d,%d\n", TypesAux.escopo ,TypesAux.endereco);
+			if(aux.idcategoria == PROC_PAR && aux.passagem == REFERENCIA && !cmdDoAtivo) escreveCodigoPilha("LOADI %d, %d\n", TypesAux.escopo, TypesAux.endereco);
+			else if(aux.passagem == REFERENCIA && cmdDoAtivo) escreveCodigoPilha("LDI %d,%d\n", TypesAux.escopo ,TypesAux.endereco);
 			else if(TypesAux.array != SIMPLES) escreveCodigoPilha("LDDLC 0\n");	
 		    else escreveCodigoPilha("LOAD %d,%d\n", TypesAux.escopo ,TypesAux.endereco);
 
@@ -205,6 +204,7 @@
 				if(tipoExpressao == -1) tipoExpressao = INT_;
 				else if(tipoExpressao == REAL_) error("Erro semântico, esperado valor inteiro/char/boolean");
 				else tipoExpressao = INT_;
+
 				escreveCodigoPilha("PUSH %d\n", tk.valor);
 			}
 			else if(tk.cat == CT_R){
@@ -383,7 +383,7 @@
 			tk = analex(f);
 			tokenInfo.ehConst = CONST_;
 		}
-		tipo();
+		tipoVar();
 		do{
 			if(tk.cat == SN && tk.codigo == VIRGULA){
 				tk.processado = true;
@@ -401,7 +401,7 @@
 		
 		return countVar;
 	}
-	void tipo(){
+	void tipoVar(){
 		if(tk.cat == PV_R && (tk.codigo == INT || tk.codigo == REAL || tk.codigo == BOOL || tk.codigo == CHAR)){
 			if (tk.codigo == INT) tokenInfo.tipo = INT_;
 			else if(tk.codigo == REAL) tokenInfo.tipo = REAL_;
@@ -447,12 +447,12 @@
 		tokenInfo.escopo = LOCAL;
 		tokenInfo.ehConst = NORMAL;
 		if(tk.codigo == ENDERECO){
-					tk.processado = true;
-					tk = analex(f);
-					tokenInfo.passagem = REFERENCIA;
-				}
+			tk.processado = true;
+			tk = analex(f);
+			tokenInfo.passagem = REFERENCIA;
+		}
 		else tokenInfo.passagem = COPIA;
-		tipo();
+		tipoVar();
 				
 	}
 
@@ -480,11 +480,13 @@
 
 	void cmdDo(){
 			int pos, qtdParam = 0;
+			char rotulo[20];
+			cmdDoAtivo = 1;
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID) error("Esperado ID do procedimento\n");
 			aux = buscaDecl(tk.lexema);
-			escreveCodigoPilha("CALL %s\n",aux.rotulo);
+			strcpy(rotulo, aux.rotulo);
 			pos = buscaLexPos(aux.lexema) + 1;
 			contaParam(pos-1, &qtdParam);
 			if(aux.idcategoria != PROC && aux.idcategoria != PROT_) error("Esperado %s ou %s, recebido %s", T_IdCategoria[PROC], T_IdCategoria[PROT_],T_IdCategoria[aux.tipo]);
@@ -515,6 +517,8 @@
 			}
 			if(qtdParam > 0) error("Quantidade de argumentos passada menor que a esperada");
 			if(tk.cat != SN || tk.codigo != PARENTESEFECHADO) error("DO - Fechamento de parenteses esperado\n");
+			escreveCodigoPilha("CALL %s\n",rotulo);
+			cmdDoAtivo = 0;
 			tk.processado = true;
 			tk = analex(f);
 	}
@@ -871,7 +875,6 @@
 	}
 
 	void declDef(){
-		
 		int qtdVariaveis = 0;
 		tokenEndereco = 0;
 		resetTokenInfo(&tokenInfo);
@@ -912,7 +915,6 @@
 
 			}
 			else if(tk.cat == ID){
-
 				char idRotulo[20];
 				char lexema[32];
 				int pos, qtdParametros = 0;
@@ -948,16 +950,16 @@
 					tk.processado = true;
 					tk = analex(f);
 					int dimensaoArray = 0;
-					while(tk.codigo == COLCHETEABERTO){
+					while(tk.cat == SN && tk.codigo == COLCHETEABERTO){
 						dimensaoArray++;
-						if(dimensaoArray > 2) error("PROC ID - Matriz de tamanho inválido");
+						if(dimensaoArray > 2) error("Matriz de tamanho inválido");
 						tk.processado = true;
 						tk = analex(f);
 						insereDimensaoArray(dimensaoArray);
 						if(strcmp(tk.lexema, tokenInfo.lexema) == 0) error("Parâmetro não pode ser utilizado para tamanho de seu próprio vetor/matriz");
 						tk.processado = true;
 						tk = analex(f);
-						if(tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
+						if(tk.cat != SN || tk.codigo != COLCHETEFECHADO) error("Fechamento de colchetes esperado");
 						tk.processado = true;
 						tk = analex(f);
 					}
@@ -1051,7 +1053,7 @@
 		}
 			else error("Finalização de Arquivo Inválida\n");
 		escreveCodigoPilha("LABEL %s\n", label);
-		if(buscaLexPos("Init") > 0){
+		if(buscaLexPos("Init") >= 0){
 			escreveCodigoPilha("CALL %s\n", buscaDecl("Init").rotulo);
 		}
 		fputs("HALT", f_out);

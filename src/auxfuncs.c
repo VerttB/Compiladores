@@ -40,10 +40,9 @@ void escreveCodigoPilha(const char* format, ...) {
     fputs(buffer, f_out);            
 }
 void bufferIntrucoes(char *inst,...){
-    static const int MAX_INSTRUCOES = 1024;
     va_list args;
     va_start(args, inst);
-        if (quantidadeIntrucoes < MAX_INSTRUCOES) {
+        if (quantidadeIntrucoes < MAX_INTRUCOES) {
             vsnprintf(instrBuffer[quantidadeIntrucoes], TAM_MAX_INSTRUCOES, inst, args);
             quantidadeIntrucoes++;
         } else {

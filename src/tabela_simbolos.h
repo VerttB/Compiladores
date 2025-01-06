@@ -1,5 +1,6 @@
 #ifndef _TABELA_SIMBOLOS_
 #define _TABELA_SIMBOLOS_
+
 #include <stdbool.h>
 #include <stdio.h>
 

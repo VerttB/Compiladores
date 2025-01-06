@@ -1,5 +1,11 @@
-def init
-   int a[100], x
-   a[5] = 3
-   x = a[5]
+prot teste(&int)
+
+def teste(&int a)
+ a = a
 endp
+
+def init
+   int c = 5
+   do teste(c)
+endp
+
