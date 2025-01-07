@@ -331,9 +331,10 @@
 	void arrayInit(){
 		int qtdInit = 0;
 		int maxQtdInit = 0;
+		int ultimoValorInt = 0;
+		float ultimoValorFloat = 0.0;
 		if(tokenInfo.array == VETOR) maxQtdInit = tokenInfo.arrayDim[0];
 		else if(tokenInfo.array == MATRIZ)  maxQtdInit = tokenInfo.arrayDim[0] * tokenInfo.arrayDim[1];
-		printf("MAX QTD INIT %d\n", maxQtdInit);
 		if(tk.cat == SN && tk.codigo == ATRIBUICAO){
 
 			tk.processado = true;
@@ -343,31 +344,45 @@
 			tk = analex(f);
 
 			do{
-				if(qtdInit > maxQtdInit) error("Quantidade máxima de inicialização de array");
+				if(qtdInit > maxQtdInit - 1) error("Quantidade máxima de inicialização de array");
 				if(tk.cat == SN && tk.codigo == VIRGULA){
 					tk.processado = true;
 					tk = analex(f);
 				}
 				validarVarInit();
-				bufferIntrucoes("LDDLC %d\nPUSH %d\nADD\n", tokenInfo.endereco, qtdInit);
+				bufferIntrucoes("LDDLC 0\nPUSH %d\nADD\n", qtdInit);
 				if(tokenInfo.tipo == CHAR_) bufferIntrucoes("PUSH %d\n", tk.c);
 				else if(tokenInfo.tipo == REAL_) bufferIntrucoes("PUSHF %f\n", tk.valor_r);
 				else if(tokenInfo.tipo == INT_) bufferIntrucoes("PUSH %d\n", tk.valor);
 				else if(tokenInfo.tipo == BOOL_) bufferIntrucoes("PUSH %d\n", tk.valor == 0 ? 0 : 1);
+
+				if(tk.cat == CT_R) ultimoValorFloat = tk.valor_r;
+				else ultimoValorInt = tk.valor;
 				bufferIntrucoes("STSTK 1\n");
 				qtdInit++;
 				tk.processado = true;
 			    tk = analex(f);
 			} while (tk.cat == SN && tk.codigo == VIRGULA);
-			
-			printTokenDados();
 			if(tk.cat != SN || tk.codigo != CHAVEFECHADA) error("Fechamento de chaves esperado");
+			if(qtdInit < maxQtdInit - 1){
+				char comandoRepetido[20];
+				if(tokenInfo.tipo == CHAR_) snprintf(comandoRepetido, sizeof(comandoRepetido), "PUSH %d\n", ultimoValorInt);
+				else if(tokenInfo.tipo == REAL_) snprintf(comandoRepetido, sizeof(comandoRepetido),"PUSHF %.2f\n", ultimoValorFloat);
+				else if(tokenInfo.tipo == INT_) snprintf(comandoRepetido, sizeof(comandoRepetido),"PUSH %d\n", ultimoValorInt);
+				else if(tokenInfo.tipo == BOOL_) snprintf(comandoRepetido, sizeof(comandoRepetido),"PUSH %d\n", ultimoValorInt == 0 ? 0 : 1);
+				for (int i = qtdInit; i <= maxQtdInit - 1; i++){
+					bufferIntrucoes("LDDLC 0\nPUSH %d\nADD\n", i);
+					bufferIntrucoes(comandoRepetido);
+					bufferIntrucoes("STSTK 1\n");
+
+				}
+				
+			}
 			tk.processado = true;
 			tk = analex(f);
-			printf("Saí do array init\n");
-
-			printTokenDados();
+	
 		}
+		
 	}
 
 	int declListVar(){
