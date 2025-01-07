@@ -12,6 +12,8 @@
 	int tokenEndereco = 0;
 	int tipoExpressao = -1;
 	int cmdDoAtivo = 0;
+	char instrBuffer[MAX_INTRUCOES][TAM_MAX_INSTRUCOES];
+
 
 	int opRel(){
 		tk = analex(f);
