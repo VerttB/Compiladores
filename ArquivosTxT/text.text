@@ -4,9 +4,16 @@ def teste(&int a)
  a = a
 endp
 
+prot batata()
+prot arroz()
+def batata()
+endp
+
 def init
    int c = 5
    char b[5]
+   real d = 2.5
+   c = 3.5
    getint c
    putstr b
    do teste(c)

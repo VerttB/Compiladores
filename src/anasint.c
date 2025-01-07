@@ -58,7 +58,7 @@
 		tk.processado = true;
 
 		Expr();
-		if(aux.tipo != REAL_ && tipoExpressao == REAL_) error("Atribuição de tipo inválida ");
+		if((aux.tipo != REAL_ && tipoExpressao == REAL_) || (aux.tipo == REAL_ && tipoExpressao != REAL_)) error("Atribuição de tipo inválida ");
 		tipoExpressao = -1;
 		if(aux.passagem == REFERENCIA)	 escreveCodigoPilha("STORI %d,%d\n", aux.escopo ,aux.endereco);
 		else if(aux.array != SIMPLES) escreveCodigoPilha("STSTK 1\n");	
@@ -900,9 +900,15 @@
 		tokenEndereco = 0;
 		resetTokenInfo(&tokenInfo);
 		tokenInfo.idcategoria = PROC;
-			tk.processado = true;
-			tk = analex(f);
-			if(tk.cat == PV_R && tk.codigo == INIT){
+		tokenInfo.zumbi = NA_ZUMBI;
+		tokenInfo.tipo = NA_TIPO;
+		tokenInfo.ehConst = NORMAL;
+		tokenInfo.array = NA_ARRAY;
+		tokenInfo.passagem = NA_PASSAGEM;
+		tk.processado = true;
+		tk = analex(f);
+		if(tk.cat == PV_R && tk.codigo == INIT){
+				
 				char initRotulo[20];
 				strcpy(tokenInfo.lexema, "Init");
 				inserirNaTabela(tokenInfo);
