@@ -556,6 +556,7 @@
 			tk = analex(f);
 	}
 	void cmdGets(){
+		int codigo = tk.codigo;
 		if(tk.codigo == GETOUT){
 			tk.processado = true;
 			tk = analex(f);
@@ -597,7 +598,9 @@
 			tk.processado = true;
 			tk = analex(f);
 		}
-		escreveCodigoPilha("STOR %d,%d\n", aux.escopo , aux.endereco);
+		if(codigo != GETOUT){
+			escreveCodigoPilha("STOR %d,%d\n", aux.escopo , aux.endereco);
+		}
 	}
 
 	void cmdVar(){
@@ -799,6 +802,24 @@
 			tk.processado = true;
 			tk = analex(f);
 			if(tk.cat != ID && tk.cat != LT) error("ID ou constante string esperado para funcionamento da função");
+			if(tk.cat == ID){
+				int repeticoes = 0;
+				aux = buscaDecl(tk.lexema);
+				if(aux.tipo != CHAR_) error("PUTSTR - identificador deve ser do tipo char");
+				if(aux.array == VETOR){
+				 repeticoes = aux.arrayDim[0];
+				 for(int i = 0;i<repeticoes;i++){
+					escreveCodigoPilha("LDDLC 0\n", aux.escopo);
+					escreveCodigoPilha("PUSH %d\n", i);
+					escreveCodigoPilha("ADD\n");
+					escreveCodigoPilha("LDSTK 1\n");
+					escreveCodigoPilha("PUT_C\n");
+
+				 }
+				}
+				else error("Identificador deve ser matriz ou vetor");
+
+			}
 			tk.processado = true;
 			tk = analex(f);
 		}
