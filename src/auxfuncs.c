@@ -9,6 +9,7 @@
 
 
 int quantidadeIntrucoes = 0;
+extern char instrBuffer[MAX_INTRUCOES][TAM_MAX_INSTRUCOES];
 
 
     void error(char *err, ...){

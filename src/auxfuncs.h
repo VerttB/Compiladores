@@ -9,7 +9,7 @@ void printFinalizacao(char []);
 void error(char *, ...);
 void escreveCodigoPilha(const char* , ... );
 void bufferIntrucoes(char *inst,...);
-char instrBuffer[MAX_INTRUCOES][TAM_MAX_INSTRUCOES];
+extern char instrBuffer[MAX_INTRUCOES][TAM_MAX_INSTRUCOES];
 extern int quantidadeIntrucoes;
 extern int linha;
 
